@@ -120,3 +120,92 @@ body:not(.dentro) .barra, body:not(.dentro) .contenedor { visibility:hidden; }
 .capas-oculta { display:none !important; }
 .boton-capas { background:#fff; border:2px solid rgba(0,0,0,.25); border-radius:8px; padding:8px 11px; font-size:14px; font-weight:700; color:var(--azul); cursor:pointer; }
 .boton-capas.activo { background:var(--azul); color:#fff; }
+
+/* ---- Versión 3: pestañas, control de hora, zonas del modelo, estadística SESNSP ---- */
+.pestanas { display:flex; gap:4px; background:#e4e9f1; border-radius:10px; padding:3px; position:sticky; top:-14px; z-index:3; }
+.pestanas button { flex:1; border:0; background:transparent; padding:8px 4px; border-radius:8px; font:inherit; font-size:12.5px; font-weight:700; color:#41506b; cursor:pointer; line-height:1.15; }
+.pestanas button.activo { background:#fff; color:var(--azul); box-shadow:0 1px 3px rgba(0,0,0,.15); }
+.tab { display:flex; flex-direction:column; gap:12px; }
+.tab.oculto { display:none; }
+.auto { font-size:12.5px; color:#41506b; display:flex; gap:6px; align-items:flex-start; }
+.auto input { margin-top:2px; width:16px; height:16px; } .auto small { color:#6b7890; }
+.chica { font-size:11.5px; color:#6b7890; margin:4px 0; }
+.punto.morado { background:#fff; box-shadow:inset 0 0 0 3px #7b2cbf; }
+.calor-ley { display:inline-block; width:26px; height:10px; border-radius:5px; vertical-align:middle; background:linear-gradient(90deg,#3b82f6,#22c55e,#facc15,#f97316,#dc2626); }
+.zona-ley { display:inline-block; width:12px; height:12px; border-radius:50%; vertical-align:middle; background:rgba(239,68,68,.5); border:2px solid #b91c1c; }
+/* Marcador de patrulla con número permanente */
+.mk-unidad .cod { font-size:11px; padding:1px 5px; box-shadow:0 1px 2px rgba(0,0,0,.4); letter-spacing:.2px; }
+.mk-unidad.rural .em { box-shadow:0 0 0 3px #7b2cbf, 0 1px 4px rgba(0,0,0,.4); }
+.zoom-lejos .mk-unidad .cod { display:none; }
+.zoom-lejos .mk-unidad .em { font-size:15px; line-height:18px; width:24px; height:24px; border-width:2px; }
+.zoom-lejos .leaflet-tooltip.etq-zona { display:none; }
+.popup .clave { font-family:ui-monospace, Menlo, Consolas, monospace; font-size:13px; color:var(--azul); }
+.popup .ficticia, .ficticia { display:inline-block; font-size:10px; background:#fff0cc; color:#7a5200; border-radius:4px; padding:0 4px; }
+.leaflet-tooltip.etq-zona { background:rgba(185,28,28,.92); color:#fff; border:0; font-size:11px; font-weight:700; padding:1px 6px; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+.leaflet-tooltip.etq-zona:before { display:none; }
+/* Control de hora sobre el mapa */
+.control-hora { position:absolute; z-index:1000; left:12px; bottom:40px; width:min(380px, calc(100% - 300px)); min-width:280px; background:rgba(255,255,255,.96);
+  border-radius:12px; padding:8px 10px 6px; box-shadow:0 2px 10px rgba(0,0,0,.28); font-size:12.5px; }
+.ch-fila1 { display:flex; align-items:center; gap:8px; }
+.ch-btn { border:1px solid #b8c2d3; background:#fff; border-radius:8px; min-width:36px; height:32px; font-size:15px; cursor:pointer; color:var(--azul); font-weight:700; }
+.ch-btn.ahora { font-size:12px; padding:0 8px; } .ch-btn.ahora.activo { background:var(--azul); color:#fff; border-color:var(--azul); }
+.ch-hora { display:flex; flex-direction:column; line-height:1.1; flex:1; } .ch-hora b { font-size:20px; color:var(--azul); } .ch-hora small { font-size:10.5px; color:#6b7890; }
+.control-hora select { font:inherit; font-size:12px; padding:5px 4px; border:1px solid #b8c2d3; border-radius:8px; background:#fff; }
+.control-hora input[type=range] { width:100%; margin:6px 0 2px; accent-color:#b91c1c; height:22px; }
+.ch-nota { font-size:10.5px; color:#9a2d00; line-height:1.2; }
+/* Pestaña Horarios y zonas */
+.aviso-modelo { margin:0; font-size:12.5px; background:#fde8e8; border:1px solid #f5b5b5; color:#7f1d1d; border-radius:8px; padding:7px 10px; }
+.h-resumen { margin:0; font-size:14px; color:var(--azul2); } .h-resumen .vivo { color:#0f5f54; font-weight:700; }
+.bloque { background:#fff; border-radius:8px; padding:8px 10px; box-shadow:0 1px 2px rgba(0,0,0,.07); }
+.bloque h2, .bloque h3 { font-size:13.5px; margin:0 0 6px; color:var(--azul2); } .bloque h2 small { font-weight:400; color:#6b7890; }
+.top-zonas { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+.top-zonas li { display:grid; grid-template-columns:30px 1fr 74px; grid-template-areas:"rk nz iz" "rk uz uz"; gap:1px 6px; padding:5px 6px; border-radius:6px; background:#f7f9fc; cursor:pointer; font-size:12.5px; }
+.top-zonas li.top { background:#fff1f1; }
+.top-zonas .rk { grid-area:rk; font-weight:800; color:#b91c1c; font-size:14px; align-self:center; }
+.top-zonas .nz { grid-area:nz; display:flex; flex-direction:column; } .top-zonas .nz small { color:#6b7890; font-size:11px; }
+.top-zonas .iz { grid-area:iz; display:flex; flex-direction:column; align-items:stretch; font-size:10.5px; color:#6b7890; text-align:right; }
+.top-zonas .uz { grid-area:uz; font-size:11px; } .top-zonas .uz em { font-style:normal; font-weight:700; background:var(--azul); color:#fff; border-radius:4px; padding:0 4px; margin-right:2px; }
+.barra-fondo { display:block; height:8px; background:#e7ecf3; border-radius:4px; overflow:hidden; flex:1; }
+.barra-val { display:block; height:100%; background:linear-gradient(90deg,#f97316,#dc2626); border-radius:4px; }
+.cobertura { width:100%; border-collapse:collapse; font-size:12.5px; } .cobertura th { text-align:left; color:#6b7890; font-weight:600; font-size:11.5px; } .cobertura td, .cobertura th { padding:2px 4px; border-bottom:1px solid #eef2f7; }
+.grafica-horas { display:flex; align-items:flex-end; gap:2px; height:90px; }
+.grafica-horas .col { flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; border:0; background:transparent; padding:0; cursor:pointer; min-width:0; }
+.grafica-horas .b { width:100%; background:#fca5a5; border-radius:2px 2px 0 0; display:block; }
+.grafica-horas .col.sel .b { background:#b91c1c; }
+.grafica-horas .m { font-size:9.5px; color:#6b7890; height:12px; }
+.metodo ul { margin:0; padding-left:18px; font-size:12px; color:#41506b; } .metodo li { margin:3px 0; }
+/* Lista de patrullas */
+.det-unidades { background:#fff; border-radius:8px; padding:8px 10px; font-size:12.5px; box-shadow:0 1px 2px rgba(0,0,0,.07); }
+.det-unidades summary { cursor:pointer; font-weight:700; color:var(--azul2); } .det-unidades summary small { font-weight:400; color:#6b7890; }
+#lista-unidades { list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; gap:3px; max-height:340px; overflow-y:auto; }
+#lista-unidades li { padding:4px 6px; border-radius:6px; background:#f7f9fc; cursor:pointer; border-left:4px solid var(--verde); }
+#lista-unidades li.asignada { border-left-color:var(--naranja); } #lista-unidades li.en_sitio { border-left-color:var(--rojo); }
+#lista-unidades .clave { float:right; font-family:ui-monospace, Menlo, Consolas, monospace; font-weight:700; color:var(--azul); }
+#lista-unidades small { color:#6b7890; }
+/* Estadística oficial (SESNSP) */
+.estadistica { display:flex; flex-direction:column; gap:10px; }
+.sesnsp-cab h2 { margin:0; font-size:15px; color:var(--azul2); } .sesnsp-cab .sub { margin:2px 0 6px; font-size:12px; color:#52607a; }
+.selector-periodo { display:flex; gap:4px; flex-wrap:wrap; }
+.selector-periodo button { border:1px solid #b8c2d3; background:#fff; border-radius:999px; padding:4px 10px; font:inherit; font-size:12px; cursor:pointer; }
+.selector-periodo button.activo { background:var(--azul2); color:#fff; border-color:var(--azul2); }
+.sesnsp-tarjetas { grid-template-columns:1fr 1fr !important; }
+.sesnsp-tarjetas .num { font-size:22px !important; }
+.fila-barra { display:grid; grid-template-columns:minmax(0,46%) 1fr auto; align-items:center; gap:6px; font-size:12px; margin:3px 0; }
+.fila-barra .etq { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#41506b; } .fila-barra.chica { font-size:11px; }
+.fila-barra .barra-val { background:linear-gradient(90deg,#3b82f6,#13315c); }
+.grafica-meses { display:flex; align-items:flex-end; gap:3px; height:120px; }
+.grafica-meses .col { flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; min-width:0; }
+.grafica-meses .v { font-size:9px; color:#41506b; } .grafica-meses .b { width:100%; background:#3b82f6; border-radius:2px 2px 0 0; display:block; }
+.grafica-meses .m { font-size:9.5px; color:#6b7890; }
+details.bloque summary { cursor:pointer; font-weight:700; color:var(--azul2); font-size:13px; }
+@media (max-width: 760px) {
+  .panel { max-height:214px; }
+  .pestanas { top:30px; } .pestanas button { font-size:11.5px; padding:6px 2px; }
+  .panel.abierto .pestanas { top:30px; }
+  .control-hora { left:8px; right:8px; bottom:8px; width:auto; min-width:0; padding:6px 8px 4px; }
+  .ch-hora b { font-size:17px; } .ch-btn { height:30px; min-width:34px; }
+  .ch-nota { font-size:10px; }
+  .leaflet-bottom.leaflet-left, .leaflet-bottom.leaflet-right .leaflet-control-attribution { margin-bottom:0; }
+  .leaflet-bottom.leaflet-right { bottom:102px; }
+  .auto small { display:none; }
+}
