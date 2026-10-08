@@ -1,0 +1,47 @@
+# Durango GeoInteligencia — versión con servidor (backend de producción a futuro)
+# Uso (desde la carpeta servidor/):
+#   cp .env.ejemplo .env      # y edite POSTGRES_PASSWORD
+#   docker compose up -d --build   →  http://localhost:8080  (API: http://localhost:8000/docs)
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: durango_geo
+      POSTGRES_USER: geo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en servidor/.env}
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d:ro   # 01_schema, 02_ejidos, 03_limite, 04_seed
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U geo -d durango_geo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://geo:${POSTGRES_PASSWORD}@db:5432/durango_geo
+      DB_DIR: /app/db
+      SIM_FACTOR_TIEMPO: "15"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:
