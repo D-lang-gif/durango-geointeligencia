@@ -1,0 +1,24 @@
+perimetro,cve_loc,nombre_inegi,nombre_en_fuente,lat,lon,nota
+Lavín,0151,Seis de Octubre,EJIDO 6 DE OCTUBRE,25.8142764,-103.574815,
+Lavín,0039,Berlín,EJIDO BERLIN,25.8234797,-103.5791478,
+Lavín,0122,Providencia,EJIDO PROVIDENCIA,25.8156172,-103.5787358,
+Lavín,0160,El Vergel,EJIDO EL VERGEL,25.6382197,-103.5207181,
+Lavín,0154,Transporte,EJIDO TRANSPORTE-SAN RAMON,25.6355253,-103.5418275,"La fuente dice ""TRANSPORTE-SAN RAMON""; se asocia a las dos localidades INEGI."
+Lavín,0141,San Ramón,EJIDO TRANSPORTE-SAN RAMON,25.6341322,-103.5433386,"La fuente dice ""TRANSPORTE-SAN RAMON""; se asocia a las dos localidades INEGI."
+Lavín,0278,Pueblo Nuevo (El Siete),EJIDO PUEBLO NUEVO,25.7332997,-103.6302294,
+Lavín,0279,El Volado,EJIDO EL VOLADO,25.73663,-103.6305089,
+Lavín,0155,El Triunfo,EJIDO EL TRIUNFO,25.6435144,-103.5124244,
+Sacramento,0135,San Felipe,EJIDO SAN FELIPE,25.6930533,-103.3826356,
+Sacramento,0048,El Compás,EJIDO EL COMPAS,25.6916353,-103.3807325,
+Sacramento,0126,Reforma,EJIDO REFORMA,25.7191761,-103.3753744,
+Sacramento,0124,El Quemado,EJIDO EL QUEMADO,25.7105458,-103.3786275,
+Sacramento,0147,Santa Cruz Luján,EJIDO LUJAN,25.7227947,-103.3596967,
+Sacramento,0056,Chihuahuita (Chihuahuita Viejo),EJIDO CHIHUAHUITA VIEJO,25.7374214,-103.3753356,
+Sacramento,0326,Chihuahuita (Chihuahuita Nuevo),EJIDO CHIHUAHUITA NUEVO,25.7329472,-103.36182,
+Sacramento,0057,18 de Marzo,EJIDO 18 DE MARZO,25.8322058,-103.3794408,
+Sacramento,0131,Rincón de Santa Cruz,EJIDO RINCON SANTA CRUZ,25.7191908,-103.3528514,
+Sacramento,0077,Villa Gregorio García,EJIDO GREGORIO GARCIA,25.7533189,-103.3523494,
+Sacramento,0159,Venecia,EJIDO VENECIA,25.7791692,-103.3533897,"Probable: aparece en la columna de Sacramento debajo de la lista, a la altura del encabezado ""PERIMETRO CENTRAL"" de la columna izquierda; la tabla no lo aclara."
+Sacramento,0030,Los Ángeles,EJIDO LOS ANGELES,25.7840844,-103.3693222,"Probable: aparece en la columna de Sacramento debajo de la lista, a la altura del encabezado ""PERIMETRO CENTRAL"" de la columna izquierda; la tabla no lo aclara."
+Sacramento,0066,Eureka de Media Luna (Eureka),EJIDO EUREKA,25.7991858,-103.3746519,"Probable: aparece en la columna de Sacramento debajo de la lista, a la altura del encabezado ""PERIMETRO CENTRAL"" de la columna izquierda; la tabla no lo aclara."
+Sacramento,0033,Arturo Martínez Adame,EJIDO ARTURO MARTINEZ,25.8318792,-103.3860239,"Probable: aparece en la columna de Sacramento debajo de la lista, a la altura del encabezado ""PERIMETRO CENTRAL"" de la columna izquierda; la tabla no lo aclara."
