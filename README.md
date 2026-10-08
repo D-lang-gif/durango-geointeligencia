@@ -23,6 +23,12 @@ Prototipo de geointeligencia para **Seguridad Pública de Gómez Palacio, Durang
   - Ciclo cada 3 s, tiempo acelerado ×15, 60 s en sitio y cierre del incidente, la patrulla queda libre y vuelve a su rondín, incidentes **en espera** cuando no hay unidades, asignación manual desde la lista y botón para reiniciar los datos de ejemplo.
 - Panel con tres pestañas (Operación / Horarios y zonas / Estadística oficial) y diseño para **teléfono** (panel inferior deslizable) y escritorio.
 
+## Plan de escalamiento
+
+**[Plan de escalamiento municipal, estatal y federal (2026-10-08)](documentos/Plan_Escalamiento_GeoInteligencia_2026-10-08.md)**: hoja de ruta para convertir este prototipo en un sistema real si las autoridades lo aceptan. Incluye qué es y qué no es el prototipo, pros, contras y riesgos, marco legal federal, estatal (Durango) y municipal, requisitos técnicos, equipo y capacitación, costos estimados por fase (rangos, no cotizaciones), fases 0 a 4, lista de verificación para reuniones, preguntas difíciles, próximos pasos y fuentes consultadas.
+
+> Documento de trabajo de una iniciativa cívica, **sin respaldo oficial**. Es la versión en Markdown del documento original (el PDF/DOCX no están en este repositorio).
+
 ## Estructura del repositorio
 
 | Carpeta | Contenido |
@@ -31,6 +37,7 @@ Prototipo de geointeligencia para **Seguridad Pública de Gómez Palacio, Durang
 | `servidor/` | Versión con servidor (**backend de producción a futuro**): FastAPI + PostgreSQL/PostGIS + WebSocket, con `docker-compose.yml`. |
 | `datos/` | Datos fuente en CSV/GeoJSON/JSON: localidades INEGI, ejidos verificados, integrantes de perímetros, límite municipal simplificado, extractos SESNSP de Gómez Palacio, zonas del modelo y flota simulada. Ver `datos/FUENTES.md`. |
 | `scripts/construir_paquete.py` | Genera `sitio/datos/paquete.js` a partir de `datos/` (gzip + AES-256-GCM). `scripts/resumir_sesnsp.py` resume los CSV del SESNSP y `scripts/preparar_zonas.py` arma las zonas del modelo. |
+| `documentos/` | Documentos del proyecto en Markdown (plan de escalamiento). No se publican en GitHub Pages. |
 | `.github/workflows/publicar.yml` | Publica `sitio/` en la rama `gh-pages`, agregando Leaflet 1.9.4 y Leaflet.heat 0.2.0 desde npm con verificación SHA-256. |
 
 ## Fuentes
