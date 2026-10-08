@@ -1,0 +1,56 @@
+Año,Clave_Ent,Entidad,Cve. Municipio,Municipio,Bien jurídico afectado,Tipo de delito,Subtipo de delito,Modalidad,Enero,Febrero,Marzo,Abril,Mayo,Junio,Julio,Agosto,Septiembre,Octubre,Noviembre,Diciembre
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Homicidio,Homicidio doloso,Con arma blanca,1,0,1,0,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Homicidio,Homicidio doloso,Con arma de fuego,0,0,1,2,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Homicidio,Homicidio culposo,En accidente de tránsito,2,5,3,2,3,3,1,6,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Homicidio,Homicidio culposo,No especificado,0,1,0,0,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Otros delitos que atentan contra la vida y la integridad corporal,Otros delitos que atentan contra la vida y la integridad corporal,Otros delitos que atentan contra la vida y la integridad corporal,0,0,1,0,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Lesiones,Lesiones dolosas,Con arma blanca,1,2,0,0,3,3,3,2,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Lesiones,Lesiones dolosas,Con arma de fuego,0,1,1,0,0,1,0,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Lesiones,Lesiones dolosas,Con otro elemento,3,20,22,20,31,26,10,13,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Lesiones,Lesiones dolosas,No especificado,19,10,4,0,0,7,10,22,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Lesiones,Lesiones culposas,Con otro elemento,0,0,1,0,3,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Lesiones,Lesiones culposas,En accidente de tránsito,9,21,16,13,9,13,13,9,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Lesiones,Lesiones culposas,No especificado,0,0,0,1,0,1,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Feminicidio,Feminicidio,Con arma blanca,1,0,0,0,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La vida y la Integridad corporal,Feminicidio,Feminicidio,Con otro elemento,0,0,0,0,0,1,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Libertad personal,Otros delitos que atentan contra la libertad personal,Otros delitos que atentan contra la libertad personal,Otros delitos que atentan contra la libertad personal,1,0,3,3,2,1,3,2,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Libertad personal,Privación ilegal de la libertad,Privación ilegal de la libertad,Privación ilegal de la libertad,0,0,0,0,0,0,0,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Libertad personal,Retención o sustracción de menores e incapaces,Retención o sustracción de menores e incapaces,Retención o sustracción de menores e incapaces,7,7,7,4,8,5,14,8,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La libertad y la seguridad sexual,Abuso sexual,Abuso sexual,Abuso sexual,6,4,13,5,12,12,8,9,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La libertad y la seguridad sexual,Otros delitos que atentan contra la libertad y la seguridad sexual,Otros delitos que atentan contra la libertad y la seguridad sexual,Otros delitos que atentan contra la libertad y la seguridad sexual,2,3,3,0,0,2,1,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La libertad y la seguridad sexual,Acoso sexual,Acoso sexual,Acoso sexual,2,1,1,0,3,2,0,2,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La libertad y la seguridad sexual,Hostigamiento sexual,Hostigamiento sexual,Hostigamiento sexual,0,0,0,0,0,0,1,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La libertad y la seguridad sexual,Violación,Violación simple,Violación simple,2,0,1,1,2,4,1,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La libertad y la seguridad sexual,Violación a la intimidad sexual,Violación a la intimidad sexual,Violación a la intimidad sexual,8,4,6,0,3,8,1,2,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo a casa habitación,Con violencia,1,0,3,1,1,2,1,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo a casa habitación,Sin violencia,2,4,2,0,1,4,5,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo de vehículo automotor - Coche de 4 ruedas,Con violencia,0,4,2,0,2,1,1,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo de vehículo automotor - Coche de 4 ruedas,Sin violencia,0,1,0,2,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo de vehículo automotor - Motocicleta,Con violencia,0,0,3,1,0,2,3,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo de vehículo automotor - Motocicleta,Sin violencia,0,0,0,1,4,1,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo de autopartes,Sin violencia,0,1,0,0,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo a transeúnte en vía pública,Con violencia,2,0,0,1,0,1,1,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo a transeúnte en vía pública,Sin violencia,0,0,2,0,0,1,0,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo a negocio,Con violencia,5,4,0,2,1,3,0,6,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo a negocio,Sin violencia,3,6,11,3,5,2,4,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Robo de ganado,Sin violencia,1,0,0,0,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Otros robos,Con violencia,14,1,5,4,4,3,9,15,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Robo,Otros robos,Sin violencia,3,17,2,1,9,6,6,2,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Fraude,Fraude,Fraude,46,35,7,4,4,5,10,11,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Abuso de confianza,Abuso de confianza,Abuso de confianza,0,1,1,0,2,0,1,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Extorsión,Extorsión por otros medios,Extorsión por otros medios,2,0,0,0,1,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Daño a la propiedad,Daño a la propiedad,Daño a la propiedad,16,7,7,5,4,4,7,6,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,El patrimonio,Despojo,Despojo,Despojo,0,0,1,1,0,0,0,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La familia,Otros delitos contra la familia,Otros delitos contra la familia,Otros delitos contra la familia,1,1,0,0,6,3,5,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La familia,Violencia familiar,Violencia familiar,Violencia familiar,73,62,90,21,100,112,109,108,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La familia,Incumplimiento de obligaciones de asistencia familiar,Incumplimiento de obligaciones de asistencia familiar,Incumplimiento de obligaciones de asistencia familiar,6,6,3,7,3,9,4,7,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La sociedad,Otros delitos contra la sociedad,Otros delitos contra la sociedad,Otros delitos contra la sociedad,0,0,2,1,2,0,3,2,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,La sociedad,Discriminación,Discriminación,Discriminación,0,0,0,0,1,1,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Narcomenudeo,Narcomenudeo posesión simple,Narcomenudeo posesión simple,33,31,25,26,31,38,37,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Otros delitos del Fuero Común,Otros delitos del Fuero Común,Otros delitos del Fuero Común,1,0,1,2,1,1,2,6,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Narcomenudeo,Narcomenudeo con fines de venta,Narcomenudeo con fines de venta,0,0,0,0,0,0,0,31,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Amenazas,Amenazas,Amenazas,10,10,9,6,21,10,12,9,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Allanamiento de morada,Allanamiento de morada,Allanamiento de morada,1,0,1,0,1,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Falsedad,Falsedad,Falsedad,0,0,1,0,0,0,0,0,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Falsificación,Falsificación,Falsificación,0,0,0,0,1,0,0,1,0,0,0,0
+2026,10,Durango,10007,Gómez Palacio,Otros bienes jurídicos afectados (del fuero común),Suplantación y usurpación de identidad,Suplantación y usurpación de identidad,Suplantación y usurpación de identidad,0,0,0,0,0,0,0,2,0,0,0,0
