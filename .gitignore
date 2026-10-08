@@ -1,0 +1,11 @@
+# Nunca subir contraseñas ni archivos locales
+.env
+servidor/.env
+privado/
+*CREDENCIALES*
+__pycache__/
+*.pyc
+.venv/
+# Leaflet se agrega automáticamente al publicar (ver .github/workflows/publicar.yml)
+sitio/vendor/
+_sitio/
