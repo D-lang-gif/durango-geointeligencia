@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Durango GeoInteligencia · Prototipo de demostración</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🛰️%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="barra">
+    <div class="marca">
+      <span class="logo">🛰️</span>
+      <div>
+        <h1>Durango GeoInteligencia</h1>
+        <p>Prototipo de geointeligencia para Seguridad Pública · Gómez Palacio, Dgo.</p>
+      </div>
+    </div>
+    <div class="etiquetas">
+      <span class="chip demo">PROTOTIPO · DATOS SIMULADOS</span>
+      <span id="estado-conexion" class="chip conexion desconectado">● Conectando…</span>
+      <span id="reloj" class="chip reloj">--:--:--</span>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <div id="mapa" aria-label="Mapa de Gómez Palacio"></div>
+
+    <aside class="panel">
+      <section class="tarjetas">
+        <div class="tarjeta"><span class="num" id="c-disponibles">–</span><span class="lbl">🚔 Patrullas disponibles</span></div>
+        <div class="tarjeta"><span class="num" id="c-ocupadas">–</span><span class="lbl">🚔 Patrullas en servicio</span></div>
+        <div class="tarjeta alerta"><span class="num" id="c-incidentes">–</span><span class="lbl">🚨 Incidentes activos</span></div>
+        <div class="tarjeta"><span class="num" id="c-ejidos">–</span><span class="lbl">🌾 Ejidos verificados</span></div>
+      </section>
+
+      <p class="aviso-corto">ℹ️ Ubicaciones de ejidos: <b>INEGI/OSM</b>. Patrullas e incidentes: <b>datos simulados</b>.</p>
+
+      <button id="btn-simular" class="boton-principal">📞 Simular llamada 911</button>
+
+      <section id="resultado" class="resultado oculto" aria-live="polite"></section>
+
+      <section class="lista">
+        <h2>Incidentes activos <small>(simulados)</small></h2>
+        <ul id="lista-incidentes"><li class="vacio">Cargando…</li></ul>
+      </section>
+
+      <section class="leyenda">
+        <h2>Leyenda</h2>
+        <div><span class="punto verde"></span> Patrulla disponible</div>
+        <div><span class="punto naranja"></span> Patrulla en camino</div>
+        <div><span class="punto rojo"></span> Patrulla en sitio</div>
+        <div>🚨 Incidente (color = prioridad) · 🌾 Ejido / localidad INEGI</div>
+      </section>
+
+      <section class="fuentes">
+        <p><strong>Fuentes.</strong> Ubicaciones de ejidos: <a href="https://www.inegi.org.mx/servicios/catalogoUnico.html" target="_blank" rel="noopener">INEGI, Catálogo Único de Claves Geoestadísticas</a>, verificadas con OpenStreetMap. Límite municipal: OpenStreetMap (ODbL).</p>
+        <p><strong>Patrullas, incidentes y teléfonos: datos simulados.</strong> No provienen de C4/C5, del 911 ni del IFT. Movimiento de patrullas simulado y acelerado; ETA estimada en línea recta a 40 km/h.</p>
+        <button id="btn-reiniciar" class="boton-secundario">↺ Reiniciar datos de ejemplo</button>
+      </section>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" integrity="sha256-65UqrlgGoRAnKfKRuriH3eeDrOhZgZo1SCenduc+SGo=" crossorigin=""></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
