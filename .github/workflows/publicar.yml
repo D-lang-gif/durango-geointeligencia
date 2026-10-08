@@ -1,0 +1,44 @@
+# Publica la carpeta sitio/ en la rama gh-pages (GitHub Pages).
+# Agrega Leaflet 1.9.4 y Leaflet.heat 0.2.0 descargados de npm y verificados con SHA-256.
+name: Publicar sitio en GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publicar-sitio
+  cancel-in-progress: true
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar sitio con Leaflet verificado
+        run: |
+          set -euo pipefail
+          rm -rf _sitio tmp && cp -r sitio _sitio && mkdir -p _sitio/vendor/leaflet tmp
+          curl -fsSL -o tmp/leaflet.tgz https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz
+          curl -fsSL -o tmp/heat.tgz https://registry.npmjs.org/leaflet.heat/-/leaflet.heat-0.2.0.tgz
+          echo "84c65a256e50657896f54c33bd857b6849ebe94c817803be818bf32a3dde0b77  tmp/leaflet.tgz" | sha256sum -c -
+          echo "6d980bce16b6bbe8e3b124d200dfd12964ff8f6bfff44eb3a47344f97dfc5c7f  tmp/heat.tgz" | sha256sum -c -
+          tar xzf tmp/leaflet.tgz -C tmp && mv tmp/package tmp/leaflet
+          tar xzf tmp/heat.tgz -C tmp && mv tmp/package tmp/heat
+          cp -r tmp/leaflet/dist/leaflet.js tmp/leaflet/dist/leaflet.css tmp/leaflet/dist/images _sitio/vendor/leaflet/
+          cp tmp/leaflet/LICENSE _sitio/vendor/leaflet/LICENSE.txt
+          cp tmp/heat/dist/leaflet-heat.js _sitio/vendor/leaflet-heat.js
+          touch _sitio/.nojekyll
+          ls -R _sitio
+      - name: Publicar en la rama gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd _sitio
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Publicar sitio desde ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
