@@ -39,7 +39,16 @@ def paquete():
     for r in leer_csv("perimetros_sideapaar_2023.csv"):
         per.setdefault(r["perimetro"], []).append({"cve": r["cve_loc"], "nombre_fuente": r["nombre_en_fuente"], "nota": r["nota"]})
     limite = json.loads((RAIZ / "datos" / "limite_gomez_palacio_osm_simplificado.geojson").read_text(encoding="utf-8"))
-    return {"v": 2, "generado": "2026-10-08", "localidades": locs, "ejidos": ejidos, "perimetros": per, "limite": limite}
+    # v3: zonas del modelo estimado (anclas reales OSM/INEGI), flota simulada y estadística oficial SESNSP
+    zonas = [{"id": r["id"], "nombre": r["nombre"], "sector": r["sector"], "tipo": r["tipo"], "lat": float(r["lat"]), "lon": float(r["lon"]),
+              "ancla": r["ancla"], "ref": r["referencia"], "pob": int(r["pob_est"]),
+              "com": int(r["comercios_osm_700m"]) if r["comercios_osm_700m"] else None}
+             for r in leer_csv("zonas_modelo.csv")]
+    flota = [{"codigo": r["unidad"], "sector": r["sector"], "zona": r["zona_inicial"], "lat": float(r["lat_base"]), "lon": float(r["lon_base"]),
+              "base": r["base"]} for r in leer_csv("flota_simulada.csv")]
+    sesnsp = json.loads((RAIZ / "datos" / "sesnsp_gomez_palacio.json").read_text(encoding="utf-8"))
+    return {"v": 3, "generado": "2026-10-08", "localidades": locs, "ejidos": ejidos, "perimetros": per, "limite": limite,
+            "zonas": zonas, "flota": flota, "sesnsp": sesnsp}
 
 
 def main():
@@ -55,7 +64,7 @@ def main():
     lineas = "\\\n".join(datos[i:i + 100] for i in range(0, len(datos), 100))
     js = ("/* Paquete de datos CIFRADO (AES-256-GCM, clave PBKDF2-SHA256). Generado por scripts/construir_paquete.py.\n"
           "   No contiene la contraseña; 'verificador' es un hash con sal (PBKDF2-HMAC-SHA256, 600 000 iteraciones). */\n"
-          f'window.PAQUETE = {{"v":2,"kdf":"PBKDF2-SHA256","iter":{ITER},"sal":"{b64(sal)}","iv":"{b64(iv)}",\n'
+          f'window.PAQUETE = {{"v":3,"kdf":"PBKDF2-SHA256","iter":{ITER},"sal":"{b64(sal)}","iv":"{b64(iv)}",\n'
           f'"verificador":"{bits[32:].hex()}",\n"datos":"{lineas}"}};\n')
     (RAIZ / "sitio" / "datos" / "paquete.js").write_text(js, encoding="utf-8")
     print(f"OK: {len(claro)} bytes gzip -> {len(datos)} caracteres base64")

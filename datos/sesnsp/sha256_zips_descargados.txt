@@ -1,0 +1,3 @@
+923b74969d91dcffe600e388151b6118188f62fa3a297a951f6446aebbcd1dd8  RNID-Delitos_Municipal-2026-ago2026.zip
+5f8c297aba046b6f26e6e15d0388cedee521e091a9609a11291d89095a3c3ead  Municipal-Delitos-2015-2025_ago2026.zip
+# SHA-256 de los zip descargados del SESNSP el 2026-10-08 (no se suben; solo el extracto de Gómez Palacio)

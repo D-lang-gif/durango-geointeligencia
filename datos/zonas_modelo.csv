@@ -1,0 +1,27 @@
+id,nombre,sector,tipo,lat,lon,ancla,referencia,pob_est,calles_res_700m,comercios_osm_700m
+U01,Centro,Centro,comercial,25.56856,-103.4991,OSM: Centro Gómez Palacio (landuse=commercial),relation/9273338,15080,113,88
+U02,Bellavista / Hospital General,Centro,habitacional,25.56389,-103.50518,OSM: parque Bellavista,way/664753849,16415,123,51
+U03,5 de Mayo,Centro,habitacional,25.57568,-103.4879,OSM: parque 5 de Mayo,way/477746293,15614,117,17
+U04,Central de Autobuses,Oriente,comercial,25.56391,-103.47647,OSM: Central de autobuses de Gómez Palacio,node/1613177087,18817,141,66
+U05,Tierra y Libertad,Oriente,habitacional,25.57171,-103.48046,OSM: Parque Tierra y Libertad,way/1145535342,15614,117,35
+U06,Santa Teresa,Oriente,habitacional,25.58735,-103.46254,OSM: Plaza Santa Teresa Islas Mujeres,way/1199802812,35099,263,0
+U07,Las Huertas,Oriente,habitacional,25.5866,-103.4459,OSM: Plaza Las Huertas,way/1311186086,15481,116,0
+U08,Valle del Nazas,Sur,habitacional,25.55117,-103.48094,OSM: parque Valle del Nazas,way/468886251,9609,72,19
+U09,Filadelfia,Norte,habitacional,25.58139,-103.49773,OSM: parque Nuevo Filadelfia,way/483621252,19751,148,34
+U10,Carlos Herrera,Norte,habitacional,25.58565,-103.50365,OSM: Parque Carlos Herrera,way/659560130,17216,129,18
+U11,Hamburgo,Norte,habitacional,25.59498,-103.49706,OSM: Plaza Hamburgo,way/483612657,22154,166,52
+U12,Santander,Norte,habitacional,25.60039,-103.47794,OSM: Santander Residencial (landuse=residential),way/1454585162,25757,193,0
+U13,Las Misiones,Norte,habitacional,25.61443,-103.49863,OSM: Las Misiones (landuse=residential),way/1359523666,28026,210,3
+U14,Fidel Velázquez,Poniente,habitacional,25.56998,-103.5208,OSM: parque Fidel Velázquez,way/1137946394,13079,98,3
+U15,El Dorado,Poniente,habitacional,25.58079,-103.51582,OSM: Plaza El Dorado,way/462696692,17750,133,7
+U16,Avenida Chapala,Poniente,habitacional,25.57851,-103.52421,OSM: Avenida Chapala,way/152541747,16282,122,8
+R01,El Vergel,Perímetro Lavín,rural,25.6382197,-103.5207181,INEGI: localidad El Vergel (100070160),100070160,4954,,
+R02,Transporte · San Ramón,Perímetro Lavín,rural,25.6355253,-103.5418275,INEGI: localidad Transporte (100070154),100070154,4490,,
+R03,Berlín · Providencia,Perímetro Lavín,rural,25.8234797,-103.5791478,INEGI: localidad Berlín (100070039),100070039,2512,,
+R04,San Felipe · El Compás,Perímetro Sacramento,rural,25.6930533,-103.3826356,INEGI: localidad San Felipe (100070135),100070135,7350,,
+R05,Santa Cruz Luján,Perímetro Sacramento,rural,25.7227947,-103.3596967,INEGI: localidad Santa Cruz Luján (100070147),100070147,3852,,
+R06,Villa Gregorio García,Perímetro Sacramento,rural,25.7533189,-103.3523494,INEGI: localidad Villa Gregorio García (100070077),100070077,2215,,
+R07,La Popular,Rural centro-norte,rural,25.6788314,-103.4667492,INEGI: localidad La Popular (100070120),100070120,3720,,
+R08,Pastor Rouaix,Rural centro-norte,rural,25.68249,-103.5106014,INEGI: localidad Pastor Rouaix (100070115),100070115,3799,,
+R09,Esmeralda,Rural centro-norte,rural,25.7418403,-103.4306081,INEGI: localidad Esmeralda (100070064),100070064,2544,,
+R10,Brittingham,Rural centro-norte,rural,25.7578672,-103.56916,INEGI: localidad Brittingham (100070040),100070040,1092,,

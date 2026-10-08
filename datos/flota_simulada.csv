@@ -1,0 +1,23 @@
+unidad,sector,zona_inicial,lat_base,lon_base,base,nota
+P-101,Centro,U01,25.5692,-103.4990,Base Centro,Simulada (misma posición que en v2)
+P-102,Oriente,U04,25.5640,-103.4780,Base Oriente,Simulada (misma posición que en v2)
+P-103,Sur,U08,25.5480,-103.4900,Base Sur,Simulada (misma posición que en v2)
+P-104,Norte,U12,25.5900,-103.4800,Base Nororiente,Simulada (misma posición que en v2)
+P-105,Poniente,U15,25.5850,-103.5070,Base Norponiente,Simulada (misma posición que en v2)
+P-106,Centro,U02,25.56389,-103.50518,Bellavista,Simulada
+P-107,Centro,U03,25.57568,-103.48790,5 de Mayo,Simulada
+P-108,Oriente,U06,25.58735,-103.46254,Santa Teresa,Simulada
+P-109,Oriente,U07,25.58660,-103.44590,Las Huertas,Simulada
+P-110,Oriente,U05,25.57171,-103.48046,Tierra y Libertad,Simulada
+P-111,Sur,U08,25.55117,-103.48094,Valle del Nazas,Simulada
+P-112,Norte,U11,25.59498,-103.49706,Hamburgo,Simulada
+P-113,Norte,U13,25.61443,-103.49863,Las Misiones,Simulada
+P-114,Norte,U09,25.58139,-103.49773,Filadelfia,Simulada
+P-115,Poniente,U14,25.56998,-103.52080,Fidel Velázquez,Simulada
+P-116,Poniente,U16,25.57851,-103.52421,Avenida Chapala,Simulada
+P-117,Perímetro Lavín,R01,25.6382197,-103.5207181,El Vergel,Simulada
+P-118,Perímetro Lavín,R03,25.8234797,-103.5791478,Berlín,Simulada
+P-119,Perímetro Sacramento,R04,25.6930533,-103.3826356,San Felipe,Simulada
+P-120,Perímetro Sacramento,R06,25.7533189,-103.3523494,Villa Gregorio García,Simulada
+P-121,Rural centro-norte,R07,25.6788314,-103.4667492,La Popular,Simulada
+P-122,Rural centro-norte,R10,25.7578672,-103.5691600,Brittingham,Simulada
