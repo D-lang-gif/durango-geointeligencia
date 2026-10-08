@@ -331,6 +331,10 @@
       const alternar = (mostrar) => { lista.classList.toggle("capas-oculta", !mostrar); botonCapas.classList.toggle("activo", mostrar); };
       L.DomEvent.on(botonCapas, "click", (e) => { L.DomEvent.stop(e); alternar(lista.classList.contains("capas-oculta")); });
       mapa.on("click", () => alternar(false));
+      // También se oculta al tocar cualquier parte del mapa fuera de la lista (puntos, rutas o ventanas emergentes incluidos)
+      L.DomEvent.on(mapa.getContainer(), "pointerdown", (e) => {
+        if (!lista.classList.contains("capas-oculta") && !lista.contains(e.target) && !botonCapas.contains(e.target)) alternar(false);
+      });
     }
     mapa.fitBounds(L.geoJSON(D.limite).getBounds(), { padding: [10, 10] });
   }
