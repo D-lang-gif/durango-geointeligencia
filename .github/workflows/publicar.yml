@@ -29,6 +29,16 @@ jobs:
           cp tmp/leaflet/LICENSE _sitio/vendor/leaflet/LICENSE.txt
           cp tmp/heat/dist/leaflet-heat.js _sitio/vendor/leaflet-heat.js
           touch _sitio/.nojekyll
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Minificar y ofuscar JS propios (sin mapas de código fuente)
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-audit --no-fund --prefix tmp/ofus javascript-obfuscator@5.9.0
+          NODE_PATH=tmp/ofus/node_modules node herramientas/ofuscar.cjs _sitio/js
+          for f in _sitio/js/*.js; do head -c 200 "$f" | grep -q 'Raúl Muñoz Villa' || { echo "Sin ofuscar: $f"; exit 1; }; node --check "$f"; done
+          if find _sitio -iname '*.map' | grep -q .; then echo "Hay mapas de código fuente"; exit 1; fi
           ls -R _sitio
       - name: Publicar en la rama gh-pages
         env:

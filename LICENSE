@@ -1,0 +1,24 @@
+LICENCIA PROPIETARIA — Durango GeoInteligencia
+
+Copyright © 2026 Raúl Muñoz Villa. Todos los derechos reservados.
+Autor: Raúl Muñoz Villa
+
+Este repositorio, su código fuente, el sitio publicado, su diseño, textos,
+modelos y documentación son propiedad exclusiva del autor.
+
+Queda prohibido, sin permiso previo y por escrito del autor:
+  - copiar, reproducir o redistribuir total o parcialmente este material;
+  - modificarlo o crear obras derivadas;
+  - usarlo con fines comerciales, institucionales o de cualquier otro tipo;
+  - sublicenciarlo, venderlo o ponerlo a disposición de terceros.
+
+Que el repositorio sea visible públicamente no concede ninguna licencia de uso.
+
+Componentes de terceros: Leaflet (licencia BSD-2-Clause) y Leaflet.heat
+(licencia MIT) se descargan durante la publicación y conservan sus propias
+licencias. Los datos públicos de INEGI, SESNSP y OpenStreetMap conservan los
+términos de sus respectivas fuentes (OpenStreetMap: ODbL).
+
+EL MATERIAL SE ENTREGA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO.
+
+Solicitudes de permiso: https://github.com/D-lang-gif
