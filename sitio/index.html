@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#0b2545">
+  <meta name="author" content="Raúl Muñoz Villa">
+  <meta name="copyright" content="© 2026 Raúl Muñoz Villa. Todos los derechos reservados.">
   <title>Durango GeoInteligencia · Prototipo</title>
   <meta property="og:title" content="Durango GeoInteligencia · Prototipo">
   <meta property="og:description" content="Prototipo de geointeligencia para Seguridad Pública de Gómez Palacio, Dgo. Acceso con usuario y contraseña. Datos operativos simulados; estadística oficial SESNSP.">
@@ -29,6 +31,7 @@
       <button id="btn-entrar" class="boton-principal" type="submit">Entrar</button>
       <p id="msg-acceso" class="msg-acceso" role="alert"></p>
       <p class="nota-acceso">PROTOTIPO DE DEMOSTRACIÓN. Patrullas, incidentes y teléfonos son <b>datos simulados</b>; no provienen de C4/C5, del 911 ni del IFT.</p>
+      <p class="nota-acceso" data-testid="autor">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
     </form>
   </div>
 
@@ -85,6 +88,7 @@
         <label class="auto"><input type="checkbox" id="auto-llamadas" checked> Llamadas automáticas simuladas <small>(más frecuentes en horas y zonas de mayor riesgo estimado)</small></label>
 
         <p class="aviso-corto">ℹ️ Localidades y ejidos: <b>INEGI/OSM</b>. Estadística: <b>SESNSP</b> (pestaña “Estadística oficial”). Patrullas, claves de oficial, incidentes y teléfonos: <b>datos simulados</b>. Rutas por calles: <b>OSRM</b>.</p>
+        <p class="aviso-corto autor">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
 
         <section id="resultado" class="resultado oculto" aria-live="polite"></section>
 
