@@ -1,5 +1,5 @@
 # Publica la carpeta sitio/ en la rama gh-pages (GitHub Pages).
-# Agrega Leaflet 1.9.4 y Leaflet.heat 0.2.0 descargados de npm y verificados con SHA-256.
+# Agrega Leaflet 1.9.4, Leaflet.heat 0.2.0 y Leaflet.markercluster 1.5.3 (v4) descargados de npm y verificados con SHA-256.
 name: Publicar sitio en GitHub Pages
 on:
   push:
@@ -23,6 +23,12 @@ jobs:
           curl -fsSL -o tmp/heat.tgz https://registry.npmjs.org/leaflet.heat/-/leaflet.heat-0.2.0.tgz
           echo "84c65a256e50657896f54c33bd857b6849ebe94c817803be818bf32a3dde0b77  tmp/leaflet.tgz" | sha256sum -c -
           echo "6d980bce16b6bbe8e3b124d200dfd12964ff8f6bfff44eb3a47344f97dfc5c7f  tmp/heat.tgz" | sha256sum -c -
+          curl -fsSL -o tmp/mc.tgz https://registry.npmjs.org/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz
+          echo "fc6b0b1d00b6c708ae54e43ee4a11ac345e41660e19f0a570190bb35babb1a1c  tmp/mc.tgz" | sha256sum -c -
+          tar xzf tmp/mc.tgz -C tmp && mv tmp/package tmp/mc
+          mkdir -p _sitio/vendor/markercluster
+          cp tmp/mc/dist/MarkerCluster.css tmp/mc/dist/MarkerCluster.Default.css tmp/mc/MIT-LICENCE.txt _sitio/vendor/markercluster/
+          sed '/sourceMappingURL/d' tmp/mc/dist/leaflet.markercluster.js > _sitio/vendor/markercluster/leaflet.markercluster.js
           tar xzf tmp/leaflet.tgz -C tmp && mv tmp/package tmp/leaflet
           tar xzf tmp/heat.tgz -C tmp && mv tmp/package tmp/heat
           cp -r tmp/leaflet/dist/leaflet.js tmp/leaflet/dist/leaflet.css tmp/leaflet/dist/images _sitio/vendor/leaflet/
@@ -37,8 +43,11 @@ jobs:
           set -euo pipefail
           npm install --no-save --no-audit --no-fund --prefix tmp/ofus javascript-obfuscator@5.9.0
           NODE_PATH=tmp/ofus/node_modules node herramientas/ofuscar.cjs _sitio/js
-          for f in _sitio/js/*.js; do head -c 200 "$f" | grep -q 'Raúl Muñoz Villa' || { echo "Sin ofuscar: $f"; exit 1; }; node --check "$f"; done
+          NODE_PATH=tmp/ofus/node_modules node herramientas/ofuscar.cjs _sitio/v4/js
+          for f in _sitio/js/*.js _sitio/v4/js/*.js; do head -c 200 "$f" | grep -q 'Raúl Muñoz Villa' || { echo "Sin ofuscar: $f"; exit 1; }; node --check "$f"; done
           if find _sitio -iname '*.map' | grep -q .; then echo "Hay mapas de código fuente"; exit 1; fi
+          if grep -rl 'sourceMappingURL' _sitio/js _sitio/v4 _sitio/vendor/markercluster --include='*.js' | grep -q .; then echo "Referencia a mapas de código fuente"; exit 1; fi
+          test -f _sitio/v4/index.html
           ls -R _sitio
       - name: Publicar en la rama gh-pages
         env:
