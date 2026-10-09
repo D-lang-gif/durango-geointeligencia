@@ -37,6 +37,9 @@ jobs:
           touch _sitio/.nojekyll
           # v4: app.js = app.js de la v3 + cambios v4 (parche revisable)
           patch -o _sitio/v4/js/app.js sitio/js/app.js herramientas/app_v4.patch
+          # v4: paquete cifrado (AES-GCM) guardado en 4 partes; se une y se verifica
+          mkdir -p _sitio/v4/datos && cat datos_v4/paquete_parte0.txt datos_v4/paquete_parte1.txt datos_v4/paquete_parte2.txt datos_v4/paquete_parte3.txt > _sitio/v4/datos/paquete.js
+          echo "99937902c2469edf6d16081eba1b7a0cf207325b44f4e7be7ce898f1e7622cc6  _sitio/v4/datos/paquete.js" | sha256sum -c -
       - uses: actions/setup-node@v4
         with:
           node-version: 22
