@@ -1,0 +1,198 @@
+--- a/sitio/js/app.js
++++ b/sitio/v4/js/app.js
+@@ -1,4 +1,5 @@
+-/* Durango GeoInteligencia v3 — sitio estático (Leaflet + OpenStreetMap + OSRM).
++/* Durango GeoInteligencia v4 (centro de mando, PROTOTIPO LOCAL) — basado en la v3 publicada; cambios v4 marcados con "v4:".
++   v3 — sitio estático (Leaflet + OpenStreetMap + OSRM).
+    PROTOTIPO: patrullas, claves de oficial, incidentes y teléfonos son DATOS SIMULADOS; la simulación corre en el navegador.
+    Localidades: INEGI. Ejidos verificados: INEGI/OSM. Rutas por calles: OSRM (servidor público de demostración).
+    Estadística oficial: SESNSP. Zonas y horarios de riesgo: MODELO ESTIMADO (simulación), ver js/modelo.js. */
+@@ -15,7 +16,7 @@
+   const TIMEOUT_OSRM_MS = 6000;
+   const N_CANDIDATAS = 3;             // solo se consulta OSRM para las 3 patrullas más cercanas en línea recta
+   const MAX_ACTIVOS_AUTO = 9;         // las llamadas automáticas se pausan con 9 incidentes activos
+-  const CLAVE_ESTADO = "dgi_simulacion_v3";
++  const CLAVE_ESTADO = "dgi_simulacion_v4";
+   const MODELO_TXT = "Modelo estimado (simulación), no datos oficiales por colonia u hora";
+   const M = window.DGI_MODELO;
+ 
+@@ -26,12 +27,26 @@
+   // Datos de ejemplo de v2 (mismos 5 incidentes; teléfonos ficticios con formato "SIM")
+   const SEMILLA_INCIDENTES = [
+     ["GP-DEMO-0001", "Robo a casa habitación", "alta", 25.7801, -103.3545, "Venecia", "871-SIM-0101", true, 25, null],
+-    ["GP-DEMO-0002", "Accidente vial", "alta", 25.7568, -103.5680, "Brittingham", "871-SIM-0102", true, 18, null],
++    ["GP-DEMO-0002", "Tránsito · accidente vial", "alta", 25.7568, -103.5680, "Brittingham", "871-SIM-0102", true, 18, null],
+     ["GP-DEMO-0003", "Riña en vía pública", "media", 25.6795, -103.4680, "La Popular", "871-SIM-0103", false, 12, "P-104"],
+     ["GP-DEMO-0004", "Violencia familiar", "alta", 25.7215, -103.6590, "Dinamita", "871-SIM-0104", true, 7, null],
+     ["GP-DEMO-0005", "Persona sospechosa", "baja", 25.6838, -103.4250, "Tajo Viejo", "871-SIM-0105", false, 3, "P-102"],
+   ];
+ 
++  // v4: categoría de cada incidente (para colores, filtros, unidades compatibles y protección de víctimas)
++  function categoriaDe(tipo) {
++    const t = String(tipo || "").toLowerCase();
++    if (t.includes("pánico") || t.includes("escolar")) return "escolar";
++    if (t.includes("violencia familiar")) return "violencia_familiar";
++    if (t.includes("tránsito") || t.includes("accidente vial") || t.includes("vial")) return "transito";
++    if (t.includes("robo")) return "robo";
++    if (t.includes("riña") || t.includes("lesiones")) return "lesiones";
++    if (t.includes("amenaza")) return "amenazas";
++    return "otros";
++  }
++  const POL = () => window.DGI_POLITICA || null; // v4: política por rol (la define centro.js)
++  const posInc = (i) => (POL() ? POL().posIncidente(i) : [i.lat, i.lon]);
++  const compatible = (u, i) => (i.categoria === "transito" ? true : u.tipo !== "transito"); // Tránsito solo atiende hechos viales
+   const $ = (id) => document.getElementById(id);
+   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+   const hora = (ms) => (ms ? new Date(ms).toLocaleTimeString("es-MX", { timeZone: TZ, hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—");
+@@ -122,17 +137,18 @@
+   }
+ 
+   // ---------- Estado de la simulación ----------
+-  let D = null, E = null, ZONA = new Map();
++  let D = null, E = null, ZONA = new Map(), CONTROL = null;
+   let mapa, capas = {}, marcadoresUnidad = new Map(), marcadoresIncidente = new Map(), marcadoresZona = new Map();
+ 
+   function estadoInicial() {
+     const ahora = Date.now();
+-    const unidades = D.flota.map((f) => ({ codigo: f.codigo, tipo: "patrulla", sector: f.sector, rural: f.sector.startsWith("Perímetro") || f.sector.startsWith("Rural"),
++    const unidades = D.flota.map((f) => ({ codigo: f.codigo, tipo: f.tipo || "patrulla", sector: f.sector, rural: f.sector.startsWith("Perímetro") || f.sector.startsWith("Rural"),
+       base: [f.lat, f.lon], baseNombre: f.base, zona: f.zona, lat: f.lat, lon: f.lon, estatus: "disponible", incidente: null, ruta: null, act: ahora }));
+     const incidentes = SEMILLA_INCIDENTES.map(([folio, tipo, prioridad, lat, lon, ref, tel, aml, hace, pat]) => ({
+-      folio, tipo, prioridad, lat, lon, referencia: ref, direccion: `Ejido ${ref} (ejemplo)`, telefono: tel, aml,
++      folio, tipo, prioridad, lat, lon, referencia: ref, direccion: `Ejido ${ref} (ejemplo)`, telefono: tel, aml, categoria: categoriaDe(tipo),
++      sensible: categoriaDe(tipo) === "violencia_familiar",
+       tiempo_llamada: ahora - hace * 60000, estatus: "pendiente", patrulla: null, _semilla: pat }));
+-    return { v: 3, unidades, incidentes, cerrados: 0, seq: 0, creado: ahora };
++    return { v: 4, unidades, incidentes, cerrados: 0, seq: 0, creado: ahora };
+   }
+   function guardar() {
+     try { localStorage.setItem(CLAVE_ESTADO, JSON.stringify(E, (k, v) => (k === "_reservada" || k === "_asignando" ? undefined : v))); } catch (e) { /* sin espacio */ }
+@@ -140,7 +156,7 @@
+   function cargarEstado() {
+     try {
+       const s = JSON.parse(localStorage.getItem(CLAVE_ESTADO));
+-      if (s && s.v === 3 && Array.isArray(s.unidades) && s.unidades.length === D.flota.length) return s;
++      if (s && s.v === 4 && Array.isArray(s.unidades) && s.unidades.length === D.flota.length) return s;
+     } catch (e) { /* nada */ }
+     return null;
+   }
+@@ -171,7 +187,7 @@
+     if (i.estatus !== "pendiente" || i._asignando) return null;
+     i._asignando = true; pintar();
+     try {
+-      const libres = () => E.unidades.filter((u) => u.estatus === "disponible" && !u._reservada);
++      const libres = () => E.unidades.filter((u) => u.estatus === "disponible" && !u._reservada && compatible(u, i));
+       let disp = libres();
+       if (!disp.length) return { ok: false, mensaje: "Sin unidades disponibles en este momento: el incidente queda PENDIENTE de asignación." };
+       const cand = disp.map((u) => ({ u, recta: dist(pos(u), pos(i)) })).sort((a, b) => a.recta - b.recta).slice(0, N_CANDIDATAS);
+@@ -258,9 +274,9 @@
+ 
+   // ---------- Mapa ----------
+   const iconoUnidad = (u) => L.divIcon({ className: "mk", iconSize: [44, 46], iconAnchor: [22, 16], popupAnchor: [0, -14],
+-    html: `<div class="mk-unidad ${esc(u.estatus)} ${u.rural ? "rural" : ""}"><div class="em">🚔</div><div class="cod">${esc(u.codigo)}</div></div>` });
++    html: `<div class="mk-unidad ${esc(u.estatus)} ${u.rural ? "rural" : ""} ${u.tipo === "transito" ? "transito" : ""}"><div class="em">${u.tipo === "transito" ? "🚦" : "🚔"}</div><div class="cod">${esc(u.codigo)}</div></div>` });
+   const iconoIncidente = (i) => L.divIcon({ className: "mk", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -14],
+-    html: `<div class="mk-inc ${esc(i.prioridad)}"><span class="anillo"></span><span class="em">🚨</span></div>` });
++    html: `<div class="mk-inc ${esc(i.prioridad)} cat-${esc(i.categoria || "otros")}${POL() && POL().protegido(i) ? " protegido" : ""}"><span class="anillo"></span><span class="em">${i.categoria === "escolar" ? "🏫" : i.categoria === "transito" ? "🚧" : i.categoria === "violencia_familiar" ? "🛡️" : "🚨"}</span></div>` });
+   const iconoEjido = () => L.divIcon({ className: "mk mk-ejido", iconSize: [22, 22], iconAnchor: [11, 11], html: "🌾" });
+   const txtRuta = (fuente) => (fuente === "osrm" ? "por calles (OSRM)" : "línea recta (OSRM no disponible)");
+   function txtModo(u) {
+@@ -283,7 +299,12 @@
+       <tr><td>Actualizado</td><td>${hora(u.act)} (centro)</td></tr></table>
+       <div class="sim">Unidad, GPS y clave de oficial simulados (datos de ejemplo).</div></div>`;
+   };
+-  const popupIncidente = (i) => `<div class="popup"><h4>🚨 ${esc(i.folio)}</h4><table>
++  const popupIncidente = (i) => (POL() && POL().protegido(i)) ? `<div class="popup"><h4>🛡️ ${esc(i.folio)}</h4><table>
++      <tr><td>Tipo</td><td><b>${esc(i.tipo)}</b></td></tr>
++      <tr><td>Estatus</td><td>${esc(ESTATUS_INC[i.estatus] || i.estatus)}</td></tr>
++      <tr><td>Ubicación</td><td><b>Protegida</b>: se muestra una zona aproximada (≈ 500 m), no el domicilio</td></tr>
++      <tr><td>Unidad</td><td>${esc(i.patrulla || "Sin asignar")}</td></tr></table>
++      <div class="sim">Caso sensible (simulado). Su rol no ve domicilio, teléfono ni ruta.</div></div>` : `<div class="popup"><h4>🚨 ${esc(i.folio)}</h4><table>
+       <tr><td>Tipo</td><td><b>${esc(i.tipo)}</b></td></tr>
+       <tr><td>Prioridad</td><td>${esc(PRIORIDAD[i.prioridad])}</td></tr>
+       <tr><td>Estatus</td><td>${esc(ESTATUS_INC[i.estatus] || i.estatus)}</td></tr>
+@@ -396,8 +417,8 @@
+         L.DomEvent.disableClickPropagation(b); return b; } });
+       botonCapas = new Boton().addTo(mapa).getContainer();
+     }
+-    const control = L.control.layers(null, {
+-      "🚔 Patrullas (simuladas)": capas.unidades,
++    const control = CONTROL = L.control.layers(null, {
++      "🚔 Unidades: patrullas y 🚦 Tránsito (simuladas)": capas.unidades,
+       "🚨 Incidentes (simulados)": capas.incidentes,
+       "🛣️ Rutas patrulla → incidente": capas.rutas,
+       "🌡️ Riesgo estimado por hora (modelo)": capas.riesgo,
+@@ -499,23 +520,26 @@
+     if (!mapa) return;
+     for (const u of E.unidades) {
+       let m = marcadoresUnidad.get(u.codigo);
++      if (POL() && !POL().verUnidad(u)) { if (m) { capas.unidades.removeLayer(m); marcadoresUnidad.delete(u.codigo); } continue; } // v4: Delta solo ve su unidad
+       const firma = u.estatus + (u.rural ? "r" : "");
+       if (!m) { m = L.marker(pos(u), { icon: iconoUnidad(u), zIndexOffset: 1000 }).bindPopup(() => popupUnidad(u)).addTo(capas.unidades); m._f = firma; marcadoresUnidad.set(u.codigo, m); }
+       else { m.setLatLng(pos(u)); if (m._f !== firma) { m.setIcon(iconoUnidad(u)); m._f = firma; } if (m.isPopupOpen()) m.setPopupContent(popupUnidad(u)); }
+     }
+     const vistosI = new Set();
+     for (const i of E.incidentes) {
++      if (POL() && POL().verIncidente && !POL().verIncidente(i)) continue; // v4: Eco solo ve la alerta de su escuela
+       vistosI.add(i.folio);
+       let m = marcadoresIncidente.get(i.folio);
+-      if (!m) { m = L.marker(pos(i), { icon: iconoIncidente(i), zIndexOffset: 500 }).bindPopup(popupIncidente(i)).addTo(capas.incidentes); marcadoresIncidente.set(i.folio, m); }
+-      else m.setPopupContent(popupIncidente(i));
++      if (!m) { m = L.marker(posInc(i), { icon: iconoIncidente(i), zIndexOffset: 500 }).bindPopup(popupIncidente(i)).addTo(capas.incidentes); marcadoresIncidente.set(i.folio, m); }
++      else { m.setLatLng(posInc(i)); m.setPopupContent(popupIncidente(i)); const f = String(POL() && POL().protegido(i)); if (m._p !== f) { m.setIcon(iconoIncidente(i)); m._p = f; } }
+     }
+     for (const [k, m] of marcadoresIncidente) if (!vistosI.has(k)) { capas.incidentes.removeLayer(m); marcadoresIncidente.delete(k); }
+-    capas.calorHeat.setLatLngs(E.incidentes.map((i) => [i.lat, i.lon, i.prioridad === "alta" ? 1 : i.prioridad === "media" ? 0.7 : 0.4]));
++    capas.calorHeat.setLatLngs(E.incidentes.filter((i) => !(POL() && POL().verIncidente && !POL().verIncidente(i))).map((i) => [...posInc(i), i.prioridad === "alta" ? 1 : i.prioridad === "media" ? 0.7 : 0.4]));
+ 
+     capas.rutas.clearLayers();
+     for (const u of E.unidades) {
+       if (!u.ruta) continue;
++      if (POL() && POL().ocultarRuta(u, incidente(u.incidente))) continue; // v4: sin ruta hacia domicilios protegidos
+       const osrm = u.ruta.fuente === "osrm";
+       L.polyline(restoDeRuta(u), osrm ? { color: "#1d4ed8", weight: 5, opacity: 0.85 } : { color: "#d62828", weight: 4, opacity: 0.9, dashArray: "8 8" })
+         .bindTooltip(`${u.codigo}: hacia ${u.incidente} · ${txtRuta(u.ruta.fuente)} · ${km(u.ruta.distancia)} · ${minutos(u.ruta.duracion)}`, { sticky: true })
+@@ -535,11 +559,11 @@
+     const ul = $("lista-incidentes");
+     if (!E.incidentes.length) { ul.innerHTML = `<li class="vacio">Sin incidentes activos. Cerrados en esta sesión: ${E.cerrados}.</li>`; return; }
+     const orden = { pendiente: 0, asignado: 1, en_sitio: 2 };
+-    const lista = [...E.incidentes].sort((a, b) => orden[a.estatus] - orden[b.estatus] || b.tiempo_llamada - a.tiempo_llamada);
++    const lista = [...E.incidentes].filter((i) => !(POL() && POL().verIncidente && !POL().verIncidente(i))).sort((a, b) => orden[a.estatus] - orden[b.estatus] || b.tiempo_llamada - a.tiempo_llamada);
+     ul.innerHTML = lista.map((i) => `
+       <li class="${esc(i.prioridad)}" data-folio="${esc(i.folio)}">
+         <div class="fila1"><span>${esc(i.folio)}</span><span class="estatus ${esc(i.estatus)}">${esc(ESTATUS_INC[i.estatus])}</span></div>
+-        <div class="fila2">${esc(i.tipo)} · Prioridad ${esc(PRIORIDAD[i.prioridad])}${i.auto ? " · <i>automática</i>" : ""}</div>
++        <div class="fila2">${POL() && POL().protegido(i) ? "🛡️ Violencia familiar · caso reservado" : esc(i.tipo)} · Prioridad ${esc(PRIORIDAD[i.prioridad])}${i.auto ? " · <i>automática</i>" : ""}</div>
+         <div class="fila2">📍 ${esc(i.referencia || "—")} · 🕒 ${hora(i.tiempo_llamada)}</div>
+         <div class="fila2">🚔 ${esc(i.patrulla || "Sin asignar")}${i.patrulla ? ` · ${km(i.distancia_m)} · ${minutos(i.eta_s)} · ${i.fuente_ruta === "osrm" ? "por calles" : "línea recta"}` : ""}</div>
+         ${i.estatus === "pendiente" ? `<button class="btn-asignar" data-folio="${esc(i.folio)}" ${i._asignando ? "disabled" : ""}>${i._asignando ? "Calculando rutas…" : "Asignar patrulla más cercana"}</button>` : ""}
+@@ -578,7 +602,7 @@
+       <p class="nota">${esc(res ? res.mensaje : "")}${ok && res.r.fuente !== "osrm" ? ` Ruta en LÍNEA RECTA: OSRM no disponible (${esc(res.r.error)}).` : ""}${i.fuera ? " ATENCIÓN: el punto está fuera del municipio de Gómez Palacio." : ""} Llamada simulada: folio, teléfono y ubicación son datos de ejemplo; la zona y el tipo se eligen con el modelo estimado de la hora ${hh(T.h)}; movimiento acelerado ×15.</p>`;
+     if (ok) {
+       avisoMapa(`${auto ? "📞 Auto · " : "✅ "}<b>${esc(res.u.codigo)}</b> → ${esc(i.folio)} · ${km(res.r.distancia)} · ${minutos(res.r.duracion)} · ${res.r.fuente === "osrm" ? "por calles (OSRM)" : "<b>línea recta</b> (OSRM no disponible)"}`, res.r.fuente === "osrm" ? "" : "alerta");
+-      if (!auto) mapa.fitBounds(L.latLngBounds(res.r.coords), { padding: esMovil() ? [30, 30] : [60, 60], maxZoom: 15 });
++      if (!auto && !(POL() && POL().protegido(i))) mapa.fitBounds(L.latLngBounds(res.r.coords), { padding: esMovil() ? [30, 30] : [60, 60], maxZoom: 15 });
+     } else avisoMapa(`⏳ ${esc(i.folio)}: sin unidad disponible, queda en espera.`, "alerta");
+   }
+ 
+@@ -612,6 +636,7 @@
+     do { [lat, lon] = desplazar(z.lat, z.lon, (z.tipo === "rural" ? 150 : 100) + Math.random() * (z.tipo === "rural" ? 800 : 550), Math.random() * 360); } while (!dentroMunicipio(lat, lon) && ++k < 10);
+     const i = { folio: folioNuevo(), tipo: s.etq, prioridad: s.prio, lat, lon, referencia: z.nombre, zonaId: z.id, direccion: `Zona ${z.nombre} (simulado)`,
+       telefono: "871-SIM-" + String(Math.floor(Math.random() * 10000)).padStart(4, "0"), aml: Math.random() < 0.7, auto: !!auto,
++      categoria: categoriaDe(s.etq), sensible: categoriaDe(s.etq) === "violencia_familiar",
+       tiempo_llamada: Date.now(), estatus: "pendiente", patrulla: null, localidad: localidadCercana([lat, lon]), fuera: !dentroMunicipio(lat, lon) };
+     E.incidentes.push(i); guardar(); pintar();
+     if (!auto && esMovil()) abrirPanel(false);
+@@ -692,6 +717,11 @@
+     };
+     reloj(); setInterval(reloj, 1000);
+     window.__dgi = { mapa, estado: () => E, datos: () => D, hora: () => ({ h: T.h, dia: T.dia, enVivo: T.enVivo }), fijarHora,
+-      osrm: () => consultasOSRM, clave: claveOficial, modelo: M }; // depuración y pruebas
++      osrm: () => consultasOSRM, clave: claveOficial, modelo: M,
++      // v4: ganchos para centro.js (centro de mando)
++      capas, control: CONTROL, asignar, pintar, guardar, dist, desplazar, categoriaDe, folioNuevo, dentroMunicipio, localidadCercana,
++      agregar: async (i) => { E.incidentes.push(i); guardar(); pintar(); return asignar(i); },
++      reemplazarEstado: (nuevo) => { E = nuevo; },
++      turno: () => turnoDe(T.h) }; // depuración, pruebas y centro de mando
+   };
+ })();

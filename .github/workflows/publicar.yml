@@ -35,6 +35,8 @@ jobs:
           cp tmp/leaflet/LICENSE _sitio/vendor/leaflet/LICENSE.txt
           cp tmp/heat/dist/leaflet-heat.js _sitio/vendor/leaflet-heat.js
           touch _sitio/.nojekyll
+          # v4: app.js = app.js de la v3 + cambios v4 (parche revisable)
+          patch -o _sitio/v4/js/app.js sitio/js/app.js herramientas/app_v4.patch
       - uses: actions/setup-node@v4
         with:
           node-version: 22
