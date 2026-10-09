@@ -5,6 +5,8 @@ Prototipo de geointeligencia para **Seguridad Pública de Gómez Palacio, Durang
 **Sitio de demostración:** https://d-lang-gif.github.io/durango-geointeligencia/
 (requiere usuario y contraseña; se entregan por separado y no están en este repositorio).
 
+**Autor: Raúl Muñoz Villa** · © 2026 · Todos los derechos reservados (ver [LICENSE](LICENSE)).
+
 > ⚠️ **PROTOTIPO CON DATOS SIMULADOS.** Las patrullas, los incidentes, los folios y los teléfonos son **ficticios** (teléfonos con formato `871-SIM-####`).
 > **No** provienen de C4/C5, del 911 ni del IFT. La información geográfica proviene de fuentes públicas (INEGI y OpenStreetMap) y la incidencia delictiva municipal de los **datos abiertos del SESNSP**. Las zonas y horarios de riesgo son un **modelo estimado (simulación), no datos oficiales por colonia u hora**.
 
@@ -38,7 +40,9 @@ Prototipo de geointeligencia para **Seguridad Pública de Gómez Palacio, Durang
 | `datos/` | Datos fuente en CSV/GeoJSON/JSON: localidades INEGI, ejidos verificados, integrantes de perímetros, límite municipal simplificado, extractos SESNSP de Gómez Palacio, zonas del modelo y flota simulada. Ver `datos/FUENTES.md`. |
 | `scripts/construir_paquete.py` | Genera `sitio/datos/paquete.js` a partir de `datos/` (gzip + AES-256-GCM). `scripts/resumir_sesnsp.py` resume los CSV del SESNSP y `scripts/preparar_zonas.py` arma las zonas del modelo. |
 | `documentos/` | Documentos del proyecto en Markdown (plan de escalamiento). No se publican en GitHub Pages. |
-| `.github/workflows/publicar.yml` | Publica `sitio/` en la rama `gh-pages`, agregando Leaflet 1.9.4 y Leaflet.heat 0.2.0 desde npm con verificación SHA-256. |
+| `.github/workflows/publicar.yml` | Publica `sitio/` en la rama `gh-pages`, agregando Leaflet 1.9.4 y Leaflet.heat 0.2.0 desde npm con verificación SHA-256, y minifica y ofusca los JS propios (`sitio/js/`). |
+| `herramientas/ofuscar.cjs` | Paso de publicación: minifica y ofusca `js/*.js` con javascript-obfuscator 5.9.0, agrega el aviso de derechos de autor y borra mapas de código fuente (`*.map`). |
+| `LICENSE` | Licencia propietaria: todos los derechos reservados. |
 
 ## Fuentes
 
@@ -53,6 +57,7 @@ Prototipo de geointeligencia para **Seguridad Pública de Gómez Palacio, Durang
 
 - La contraseña **no** está en el repositorio. Se guarda solo un **verificador con sal** (PBKDF2-HMAC-SHA256, 600,000 iteraciones, sal aleatoria) y los datos del mapa van **cifrados** con AES-256-GCM usando una clave derivada de la misma contraseña.
 - Es una protección **de nivel demostración**: al ser un sitio estático y público, cualquiera puede descargar el paquete cifrado e intentar adivinar la contraseña sin límite de intentos, y el código del sitio es visible. Además, los datos geográficos ya son públicos en este repositorio (`datos/`). **No use este esquema para información sensible real**; para producción se requiere autenticación en servidor (ver `servidor/`).
+- El JavaScript publicado va **minificado y ofuscado**, sin mapas de código fuente. Esto dificulta copiarlo o entenderlo, pero **no lo hace imposible**: todo código que corre en el navegador puede descargarse y, con tiempo, analizarse. Leaflet y Leaflet.heat se publican sin ofuscar, con sus licencias originales.
 - Para cambiar la contraseña: `pip install cryptography` y luego `python3 scripts/construir_paquete.py` (la pide por teclado); suba el nuevo `sitio/datos/paquete.js`.
 
 ## Limitaciones
@@ -93,3 +98,10 @@ uvicorn app.main:app --port 8000
 ```
 
 La versión con servidor calcula distancias en línea recta con PostGIS (todavía no usa OSRM) y comparte una sola simulación entre todos los usuarios por WebSocket.
+
+## Licencia
+
+© 2026 Raúl Muñoz Villa. Todos los derechos reservados. Prohibida la copia, modificación, uso o redistribución sin permiso previo y por escrito del autor. Ver [LICENSE](LICENSE).
+
+---
+Autor: **Raúl Muñoz Villa**
