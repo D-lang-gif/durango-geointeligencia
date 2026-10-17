@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b2545">
+  <meta name="author" content="Raúl Muñoz Villa">
+  <meta name="copyright" content="© 2026 Raúl Muñoz Villa. Todos los derechos reservados.">
+  <title>Durango GeoInteligencia · Prototipo</title>
+  <meta property="og:title" content="Durango GeoInteligencia · Prototipo">
+  <meta property="og:description" content="Prototipo de geointeligencia para Seguridad Pública de Gómez Palacio, Dgo. Acceso con usuario y contraseña. Datos operativos simulados; estadística oficial SESNSP.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🛰️%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <!-- Pantalla de acceso -->
+  <div id="acceso" class="acceso">
+    <form id="form-acceso" class="caja-acceso" autocomplete="on">
+      <div class="logo-acceso">🛰️</div>
+      <h1>Durango GeoInteligencia</h1>
+      <p class="sub">Prototipo para Seguridad Pública · Gómez Palacio, Dgo.</p>
+      <label for="usuario">Usuario</label>
+      <input id="usuario" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+      <label for="contrasena">Contraseña</label>
+      <div class="fila-pw">
+        <input id="contrasena" name="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+        <button type="button" id="ver-pw" class="ver-pw" aria-label="Mostrar contraseña">👁</button>
+      </div>
+      <button id="btn-entrar" class="boton-principal" type="submit">Entrar</button>
+      <p id="msg-acceso" class="msg-acceso" role="alert"></p>
+      <p class="nota-acceso">PROTOTIPO DE DEMOSTRACIÓN. Patrullas, incidentes y teléfonos son <b>datos simulados</b>; no provienen de C4/C5, del 911 ni del IFT.</p>
+      <p class="nota-acceso" data-testid="autor">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
+    </form>
+  </div>
+
+  <header class="barra">
+    <div class="marca">
+      <span class="logo">🛰️</span>
+      <div>
+        <h1>Durango GeoInteligencia</h1>
+        <p>Prototipo de geointeligencia para Seguridad Pública · Gómez Palacio, Dgo.</p>
+      </div>
+    </div>
+    <div class="etiquetas">
+      <span class="chip demo">PROTOTIPO · DATOS SIMULADOS</span>
+      <span class="chip conexion conectado" title="La simulación corre en este navegador">● Simulación local</span>
+      <span id="reloj" class="chip reloj">--:--:--</span>
+      <button id="btn-salir" class="chip salir" type="button">Salir</button>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <div id="mapa" aria-label="Mapa de Gómez Palacio">
+      <div id="aviso-mapa" class="aviso-mapa oculto" aria-live="polite"></div>
+      <div id="control-hora" class="control-hora" role="group" aria-label="Hora del modelo de riesgo">
+        <div class="ch-fila1">
+          <button id="btn-play" type="button" class="ch-btn" aria-label="Reproducir horas">▶</button>
+          <span class="ch-hora"><b id="hora-txt">--:--</b><small id="hora-turno"></small></span>
+          <select id="dia" aria-label="Tipo de día">
+            <option value="0">Lun–Jue</option><option value="1">Viernes</option><option value="2">Sábado</option><option value="3">Domingo</option>
+          </select>
+          <button id="btn-ahora" type="button" class="ch-btn ahora">Ahora</button>
+        </div>
+        <input id="hora" type="range" min="0" max="23" step="1" value="12" aria-label="Hora (0 a 23)">
+        <div class="ch-nota">Riesgo por hora: <b>modelo estimado (simulación)</b>, no datos oficiales por colonia u hora</div>
+      </div>
+    </div>
+
+    <aside id="panel" class="panel">
+      <button id="asa" class="asa" type="button" aria-expanded="false"><span class="barrita"></span><span id="asa-txt">▲ Ver panel</span></button>
+      <nav class="pestanas" role="tablist">
+        <button type="button" data-tab="tab-operacion" class="activo">Operación</button>
+        <button type="button" data-tab="tab-horarios">Horarios y zonas</button>
+        <button type="button" data-tab="tab-estadistica">Estadística oficial</button>
+      </nav>
+
+      <div id="tab-operacion" class="tab">
+        <section class="tarjetas">
+          <div class="tarjeta"><span class="num" id="c-disponibles">–</span><span class="lbl">🚔 En rondín</span></div>
+          <div class="tarjeta"><span class="num" id="c-ocupadas">–</span><span class="lbl">🚔 Atendiendo</span></div>
+          <div class="tarjeta alerta"><span class="num" id="c-incidentes">–</span><span class="lbl">🚨 Incidentes activos</span></div>
+          <div class="tarjeta"><span class="num" id="c-pendientes">–</span><span class="lbl">⏳ En espera</span></div>
+        </section>
+
+        <button id="btn-simular" class="boton-principal">📞 Simular llamada 911</button>
+        <label class="auto"><input type="checkbox" id="auto-llamadas" checked> Llamadas automáticas simuladas <small>(más frecuentes en horas y zonas de mayor riesgo estimado)</small></label>
+
+        <p class="aviso-corto">ℹ️ Localidades y ejidos: <b>INEGI/OSM</b>. Estadística: <b>SESNSP</b> (pestaña “Estadística oficial”). Patrullas, claves de oficial, incidentes y teléfonos: <b>datos simulados</b>. Rutas por calles: <b>OSRM</b>.</p>
+        <p class="aviso-corto autor">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
+
+        <section id="resultado" class="resultado oculto" aria-live="polite"></section>
+
+        <section class="lista">
+          <h2>Incidentes activos <small>(simulados)</small></h2>
+          <ul id="lista-incidentes"><li class="vacio">Cargando…</li></ul>
+        </section>
+
+        <details id="det-unidades" class="det-unidades">
+          <summary>🚔 Patrullas (<span id="n-unidades">–</span>) · clave de oficial, zona y estatus <small>(simulado)</small></summary>
+          <p class="chica">Claves de oficial <b>ficticias (simulación)</b>, con formato de radio; cambian con el turno. No corresponden a personas ni placas reales.</p>
+          <ul id="lista-unidades"></ul>
+        </details>
+
+        <section class="leyenda">
+          <h2>Leyenda</h2>
+          <div><span class="punto verde"></span> Patrulla en rondín · <span class="punto naranja"></span> en camino · <span class="punto rojo"></span> en sitio · <span class="punto morado"></span> borde morado: unidad rural</div>
+          <div><span class="linea ruta"></span> Ruta por calles (OSRM) · <span class="linea recta"></span> Línea recta (OSRM no disponible)</div>
+          <div><span class="calor-ley"></span> Riesgo estimado por hora · <span class="zona-ley"></span> Zona del modelo (las 5 de mayor riesgo, con número) <small>(simulación)</small></div>
+          <div>🚨 Incidente (color = prioridad) · 🌾 Ejido verificado (13)</div>
+          <div><span class="circ grande"></span> Localidad INEGI ≥ 2,500 hab. · <span class="circ media"></span> 500–2,499 · <span class="circ chica"></span> &lt; 500</div>
+          <div><span class="anillo-ley lavin"></span> Perímetro Lavín · <span class="anillo-ley sacramento"></span> Perímetro Sacramento <small>(solo puntos: no hay polígono oficial)</small></div>
+        </section>
+
+        <section class="fuentes">
+          <p><strong>Fuentes.</strong> Localidades (<span id="n-loc">–</span>) y población 2020: <a href="https://www.inegi.org.mx/servicios/catalogoUnico.html" target="_blank" rel="noopener">INEGI, Catálogo Único de Claves Geoestadísticas</a>. 13 ejidos verificados con OpenStreetMap. Límite municipal: OpenStreetMap (ODbL). Integrantes de los perímetros Lavín y Sacramento: tabla del SIDEAPAAR 2023 (Ayuntamiento de Gómez Palacio). Incidencia delictiva municipal: <a href="https://www.gob.mx/sesnsp/acciones-y-programas/datos-abiertos-de-incidencia-delictiva" target="_blank" rel="noopener">SESNSP, datos abiertos</a>. Rutas: <a href="https://project-osrm.org/" target="_blank" rel="noopener">OSRM</a> (servidor público de demostración).</p>
+          <p><strong>Patrullas, claves de oficial, incidentes y teléfonos: datos simulados.</strong> No provienen de C4/C5, del 911 ni del IFT. La simulación corre en <b>este</b> navegador (cada persona ve su propia simulación) y está acelerada ×15. El tiempo estimado es de manejo normal según OSRM, no de emergencia.</p>
+          <button id="btn-reiniciar" class="boton-secundario">↺ Reiniciar datos de ejemplo</button>
+        </section>
+      </div>
+
+      <div id="tab-horarios" class="tab oculto">
+        <p class="aviso-modelo">⚠️ <b>Modelo estimado (simulación), no datos oficiales por colonia u hora.</b> No existe una fuente pública de delitos por colonia y hora para Gómez Palacio; las zonas y horarios se estiman como se explica abajo.</p>
+        <p id="h-resumen" class="h-resumen"></p>
+        <section class="bloque">
+          <h2>Zonas de mayor riesgo estimado a esta hora</h2>
+          <ol id="top-zonas" class="top-zonas"></ol>
+          <p class="chica">Toque una zona para verla en el mapa. Las patrullas en rondín se reparten en proporción al riesgo estimado de la hora, con al menos una unidad por sector urbano; las unidades rurales se quedan en su sector.</p>
+        </section>
+        <section class="bloque">
+          <h2>Cobertura por sector</h2>
+          <table class="cobertura"><thead><tr><th>Sector</th><th>En rondín</th><th>Atendiendo</th></tr></thead><tbody id="cobertura"></tbody></table>
+        </section>
+        <section class="bloque">
+          <h2>Riesgo estimado total por hora <small>(toque una barra)</small></h2>
+          <div id="grafica-horas" class="grafica-horas"></div>
+        </section>
+        <section class="bloque metodo">
+          <h2>¿Cómo se estima?</h2>
+          <ul>
+            <li><b>Peso de cada tipo de delito:</b> su participación <b>real</b> en Gómez Palacio en 2025 (SESNSP, nivel municipal).</li>
+            <li><b>Perfil por hora y por día:</b> supuestos generales del modelo, coherentes con lo publicado para La Laguna por el <a href="https://observatoriodelalaguna.org.mx/publicacion/reporte-sobre-incidencia-delictiva-en-la-laguna-enero-mayo-2025/" target="_blank" rel="noopener">Observatorio de La Laguna (CCI Laguna, 26/06/2025)</a>: robos con violencia más frecuentes en la tarde y noche, y violencia familiar concentrada el domingo de 18:00 a 24:00.</li>
+            <li><b>Peso de cada zona:</b> población estimada (INEGI 2020, repartida por densidad de calles de OpenStreetMap) y comercios y servicios mapeados en OpenStreetMap. En zona rural, población INEGI de las localidades cercanas.</li>
+            <li><b>Ubicación de las zonas:</b> plazas, parques y puntos reales de OpenStreetMap y localidades INEGI. No se usa ningún dato delictivo por colonia ni calificaciones de “colonias peligrosas”.</li>
+          </ul>
+        </section>
+      </div>
+
+      <div id="tab-estadistica" class="tab oculto">
+        <div id="estadistica" class="estadistica"><p class="chica">Cargando…</p></div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script>window.L || document.write('<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><\/script>');</script>
+  <script src="vendor/leaflet-heat.js"></script>
+  <script>(window.L && L.heatLayer) || document.write('<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" integrity="sha256-65UqrlgGoRAnKfKRuriH3eeDrOhZgZo1SCenduc+SGo=" crossorigin=""><\/script>');</script>
+  <script src="datos/paquete.js"></script>
+  <script src="js/modelo.js"></script>
+  <script src="js/estadistica.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/acceso.js"></script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b2545">
+  <meta name="author" content="Raúl Muñoz Villa">
+  <meta name="copyright" content="© 2026 Raúl Muñoz Villa. Todos los derechos reservados.">
+  <title>Durango GeoInteligencia · v4 Centro de mando (demo)</title>
+  <meta property="og:title" content="Durango GeoInteligencia · v4 Centro de mando (demo)">
+  <meta property="og:description" content="Prototipo de geointeligencia para Seguridad Pública de Gómez Palacio, Dgo. Acceso por rol. Datos operativos simulados; estadística oficial SESNSP; escuelas SEP.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🛰️%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="../vendor/markercluster/MarkerCluster.css">
+  <link rel="stylesheet" href="../vendor/markercluster/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="../css/estilos.css">
+  <link rel="stylesheet" href="css/v4.css">
+</head>
+<body>
+  <!-- Pantalla de acceso -->
+  <div id="acceso" class="acceso">
+    <form id="form-acceso" class="caja-acceso" autocomplete="on">
+      <div class="logo-acceso">🛰️</div>
+      <h1>Durango GeoInteligencia</h1>
+      <p class="sub">Prototipo para Seguridad Pública · Gómez Palacio, Dgo.<br><b>v4 · Centro de mando (demo)</b></p>
+      <label for="usuario">Usuario</label>
+      <input id="usuario" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+      <label for="contrasena">Contraseña</label>
+      <div class="fila-pw">
+        <input id="contrasena" name="password" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+        <button type="button" id="ver-pw" class="ver-pw" aria-label="Mostrar contraseña">👁</button>
+      </div>
+      <button id="btn-entrar" class="boton-principal" type="submit">Entrar</button>
+      <p id="msg-acceso" class="msg-acceso" role="alert"></p>
+      <p class="nota-acceso">Usuarios por rol: <b>alfa</b> · <b>charlie</b> · <b>bravo</b> · <b>delta</b> · <b>eco</b> (contraseñas por separado). El Director(a) se da de alta desde el panel de Alfa.</p>
+      <p class="nota-acceso">PROTOTIPO DE DEMOSTRACIÓN. Patrullas, incidentes y teléfonos son <b>datos simulados</b>; no provienen de C4/C5, del 911 ni del IFT. Listo para integración con C4/API/CCTV autorizados por el Director.</p>
+      <p class="nota-acceso" data-testid="autor">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
+    </form>
+  </div>
+
+  <div id="banner-modo" class="banner-modo" role="status">Modo demostración — listo para integración con C4/API/CCTV autorizados por el Director</div>
+  <header class="barra">
+    <div class="marca">
+      <span class="logo">🛰️</span>
+      <div>
+        <h1>Durango GeoInteligencia</h1>
+        <p>v4 · Centro de mando (demo) · Seguridad Pública · Gómez Palacio, Dgo.</p>
+      </div>
+    </div>
+    <div class="etiquetas">
+      <span class="chip demo">DEMO · DATOS SIMULADOS</span>
+      <span id="chip-rol" class="chip rol">–</span>
+      <span class="chip conexion conectado" title="La simulación corre en este navegador">● Simulación local</span>
+      <button id="btn-conexion" class="chip conexion-real" type="button" role="switch" aria-checked="false" title="Modo demostración">🔒 Modo demostración <span class="sw-mini"></span></button>
+      <button id="btn-recorrido" class="chip" type="button" hidden title="Recorrido demo del Director">🎭 Recorrido Director</button>
+      <button id="btn-salir-recorrido" class="chip" type="button" hidden>Salir del recorrido</button>
+      <span id="reloj" class="chip reloj">--:--:--</span>
+      <button id="btn-salir" class="chip salir" type="button">Salir</button>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <div id="mapa" aria-label="Mapa de Gómez Palacio">
+      <div id="aviso-mapa" class="aviso-mapa oculto" aria-live="polite"></div>
+      <div id="control-hora" class="control-hora" role="group" aria-label="Hora del modelo de riesgo">
+        <div class="ch-fila1">
+          <button id="btn-play" type="button" class="ch-btn" aria-label="Reproducir horas">▶</button>
+          <span class="ch-hora"><b id="hora-txt">--:--</b><small id="hora-turno"></small></span>
+          <select id="dia" aria-label="Tipo de día">
+            <option value="0">Lun–Jue</option><option value="1">Viernes</option><option value="2">Sábado</option><option value="3">Domingo</option>
+          </select>
+          <button id="btn-ahora" type="button" class="ch-btn ahora">Ahora</button>
+        </div>
+        <input id="hora" type="range" min="0" max="23" step="1" value="12" aria-label="Hora (0 a 23)">
+        <div class="ch-nota">Riesgo por hora: <b>modelo estimado (simulación)</b>, no datos oficiales por colonia u hora</div>
+      </div>
+    </div>
+
+    <aside id="panel" class="panel">
+      <button id="asa" class="asa" type="button" aria-expanded="false"><span class="barrita"></span><span id="asa-txt">▲ Ver panel</span></button>
+      <nav class="pestanas" role="tablist">
+        <button type="button" data-tab="tab-mando">Mando</button>
+        <button type="button" data-tab="tab-integracion">Integración</button>
+        <button type="button" data-tab="tab-credenciales">Credenciales</button>
+        <button type="button" data-tab="tab-traspaso">Traspaso</button>
+        <button type="button" data-tab="tab-operacion" class="activo">Operación</button>
+        <button type="button" data-tab="tab-unidad">Mi unidad</button>
+        <button type="button" data-tab="tab-miescuela">Mi escuela</button>
+        <button type="button" data-tab="tab-panico">Pánico</button>
+        <button type="button" data-tab="tab-escuelas">Escuelas</button>
+        <button type="button" data-tab="tab-vf">V. familiar</button>
+        <button type="button" data-tab="tab-horarios">Horarios y zonas</button>
+        <button type="button" data-tab="tab-estadistica">Estadística oficial</button>
+        <button type="button" data-tab="tab-licencias">Licencias</button>
+        <button type="button" data-tab="tab-auditoria">Auditoría</button>
+      </nav>
+
+      <div id="tab-operacion" class="tab">
+        <section class="tarjetas">
+          <div class="tarjeta"><span class="num" id="c-disponibles">–</span><span class="lbl">🚔 En rondín</span></div>
+          <div class="tarjeta"><span class="num" id="c-ocupadas">–</span><span class="lbl">🚔 Atendiendo</span></div>
+          <div class="tarjeta alerta"><span class="num" id="c-incidentes">–</span><span class="lbl">🚨 Incidentes activos</span></div>
+          <div class="tarjeta"><span class="num" id="c-pendientes">–</span><span class="lbl">⏳ En espera</span></div>
+        </section>
+
+        <button id="btn-simular" class="boton-principal">📞 Simular llamada 911</button>
+        <form id="form-incidente" class="form-v4 solo-despacho">
+          <label for="inc-cat">Registrar incidente simulado</label>
+          <div class="fila-form">
+            <select id="inc-cat">
+              <option value="escolar">🏫 Escuelas · prioridad 1</option>
+              <option value="violencia_familiar">🛡️ Violencia familiar (modo discreto)</option>
+              <option value="transito">🚧 Tránsito · accidente vial</option>
+              <option value="robo">Robo a transeúnte</option>
+              <option value="robo_negocio">Robo a negocio</option>
+              <option value="lesiones">Riña / lesiones</option>
+              <option value="amenazas">Amenazas</option>
+              <option value="narcomenudeo">Narcomenudeo (reporte)</option>
+              <option value="danio">Daño a la propiedad</option>
+            </select>
+            <button class="boton-secundario" type="submit">Registrar</button>
+          </div>
+        </form>
+        <label class="auto"><input type="checkbox" id="auto-llamadas" checked> Llamadas automáticas simuladas <small>(más frecuentes en horas y zonas de mayor riesgo estimado)</small></label>
+
+        <p class="aviso-corto">ℹ️ Localidades y ejidos: <b>INEGI/OSM</b>. Estadística: <b>SESNSP</b> (pestaña “Estadística oficial”). Patrullas, claves de oficial, incidentes y teléfonos: <b>datos simulados</b>. Rutas por calles: <b>OSRM</b>.</p>
+        <p class="aviso-corto autor">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
+
+        <section id="resultado" class="resultado oculto" aria-live="polite"></section>
+
+        <section class="lista">
+          <h2>Incidentes activos <small>(simulados)</small></h2>
+          <ul id="lista-incidentes"><li class="vacio">Cargando…</li></ul>
+        </section>
+
+        <details id="det-unidades" class="det-unidades">
+          <summary>🚔 Patrullas (<span id="n-unidades">–</span>) · clave de oficial, zona y estatus <small>(simulado)</small></summary>
+          <p class="chica">Claves de oficial <b>ficticias (simulación)</b>, con formato de radio; cambian con el turno. No corresponden a personas ni placas reales.</p>
+          <ul id="lista-unidades"></ul>
+        </details>
+
+        <section class="leyenda">
+          <h2>Leyenda</h2>
+          <div><span class="punto verde"></span> Patrulla en rondín · <span class="punto naranja"></span> en camino · <span class="punto rojo"></span> en sitio · <span class="punto morado"></span> borde morado: unidad rural</div>
+          <div><span class="linea ruta"></span> Ruta por calles (OSRM) · <span class="linea recta"></span> Línea recta (OSRM no disponible)</div>
+          <div><span class="calor-ley"></span> Riesgo estimado por hora · <span class="zona-ley"></span> Zona del modelo (las 5 de mayor riesgo, con número) <small>(simulación)</small></div>
+          <div>🚨 Incidente (color = prioridad) · 🌾 Ejido verificado (13)</div>
+          <div><span class="circ grande"></span> Localidad INEGI ≥ 2,500 hab. · <span class="circ media"></span> 500–2,499 · <span class="circ chica"></span> &lt; 500</div>
+          <div><span class="anillo-ley lavin"></span> Perímetro Lavín · <span class="anillo-ley sacramento"></span> Perímetro Sacramento <small>(solo puntos: no hay polígono oficial)</small></div>
+        </section>
+
+        <section class="fuentes">
+          <p><strong>Fuentes.</strong> Localidades (<span id="n-loc">–</span>) y población 2020: <a href="https://www.inegi.org.mx/servicios/catalogoUnico.html" target="_blank" rel="noopener">INEGI, Catálogo Único de Claves Geoestadísticas</a>. 13 ejidos verificados con OpenStreetMap. Límite municipal: OpenStreetMap (ODbL). Integrantes de los perímetros Lavín y Sacramento: tabla del SIDEAPAAR 2023 (Ayuntamiento de Gómez Palacio). Incidencia delictiva municipal: <a href="https://www.gob.mx/sesnsp/acciones-y-programas/datos-abiertos-de-incidencia-delictiva" target="_blank" rel="noopener">SESNSP, datos abiertos</a>. Rutas: <a href="https://project-osrm.org/" target="_blank" rel="noopener">OSRM</a> (servidor público de demostración).</p>
+          <p><strong>Patrullas, claves de oficial, incidentes y teléfonos: datos simulados.</strong> No provienen de C4/C5, del 911 ni del IFT. La simulación corre en <b>este</b> navegador (cada persona ve su propia simulación) y está acelerada ×15. El tiempo estimado es de manejo normal según OSRM, no de emergencia.</p>
+          <button id="btn-reiniciar" class="boton-secundario">↺ Reiniciar datos de ejemplo</button>
+        </section>
+      </div>
+
+      <div id="tab-mando" class="tab oculto">
+        <p class="aviso-corto">🛰️ <b>Centro de mando · datos simulados.</b> KPIs, feed y tiempos salen de la simulación de este navegador.</p>
+        <section id="kpis" class="tarjetas kpis-v4"></section>
+        <section class="bloque">
+          <h2>Tiempo de reacción <small>(llamada → llegada, minutos simulados)</small></h2>
+          <div id="graf-tiempos" class="graf-v4"></div>
+        </section>
+        <section class="bloque">
+          <h2>Feed de incidentes <small>(en vivo · simulado)</small></h2>
+          <ul id="feed" class="feed-v4"><li class="vacio">Esperando eventos…</li></ul>
+        </section>
+      </div>
+
+      <div id="tab-unidad" class="tab oculto">
+        <div id="mi-unidad"></div>
+        <section class="bloque">
+          <h2>Alertas escolares activas <small>(simulado)</small></h2>
+          <div id="unidad-alertas" class="chica">Sin alertas.</div>
+        </section>
+      </div>
+
+      <div id="tab-miescuela" class="tab oculto">
+        <section class="bloque">
+          <h2 id="eco-escuela">Mi escuela</h2>
+          <p id="eco-sub" class="chica"></p>
+        </section>
+        <button id="eco-panico" class="boton-principal boton-panico" type="button">🚨 Botón de pánico silencioso</button>
+        <p class="chica">Simulación: no hace ruido, no llama a nadie real. Tiene 5 segundos para cancelar.</p>
+        <section class="bloque">
+          <h2>Aviso a vecinos verificados <small>(simulado)</small></h2>
+          <div id="eco-vecinos" class="chica">Sin avisos. Si hay una alerta en su escuela, aquí verá el mensaje que reciben los vecinos verificados.</div>
+        </section>
+      </div>
+
+      <div id="tab-panico" class="tab oculto">
+        <p class="aviso-corto">🚨 <b>Botón de pánico silencioso (simulado).</b> Orden: <b>1)</b> 9-1-1 / C5 → <b>2)</b> unidad más cercana con ETA → <b>3)</b> vecinos verificados: «Resguárdate, no acudas, autoridades avisadas». 5 s para cancelar. Ningún sistema real recibe nada.</p>
+        <form id="form-panico" class="form-v4 solo-simular">
+          <label for="pan-escuela">Simular activación en una escuela</label>
+          <div class="fila-form"><select id="pan-escuela"></select><button class="boton-secundario" type="submit">Activar</button></div>
+        </form>
+        <div id="lista-panico"><p class="chica">Sin alertas.</p></div>
+      </div>
+
+      <div id="tab-escuelas" class="tab oculto">
+        <p id="esc-resumen" class="h-resumen"></p>
+        <section class="bloque">
+          <h2>Capas</h2>
+          <p class="chica">🏫 <b>Escuelas SEP</b> (prioridad 1) agrupadas en racimos; al acercarse se ven por inmueble. ◯ <b>Perímetros</b> con el radio sugerido (200 m básica / 300 m media superior y superior), uno por inmueble aunque haya varios turnos. 🏥 <b>Hospitales y sitios de apoyo: pendiente</b> (capa vacía).</p>
+        </section>
+        <section class="bloque">
+          <h2>Escuelas más cercanas al centro del mapa</h2>
+          <ul id="lista-escuelas" class="lista-v4"></ul>
+        </section>
+        <p class="chica" id="esc-fuente"></p>
+      </div>
+
+      <div id="tab-vf" class="tab oculto">
+        <p class="aviso-corto">🛡️ <b>Violencia familiar · modo discreto.</b> Sin aviso a vecinos. Detalle del caso: <b>solo Charlie</b>. Alfa ve conteos anónimos. En el mapa, los demás roles ven una zona aproximada (≈ 500 m).</p>
+        <div id="vf-contenido"></div>
+      </div>
+
+      <div id="tab-licencias" class="tab oculto">
+        <p class="aviso-corto">🔑 <b>Licencias simuladas</b> (organizaciones, asientos y vencimiento). No hay cobro ni contrato real.</p>
+        <section class="bloque">
+          <table class="cobertura tabla-v4"><thead><tr><th>Organización</th><th>Asientos</th><th>Vence</th><th>Estado</th><th></th></tr></thead><tbody id="lic-tabla"></tbody></table>
+        </section>
+      </div>
+
+      <div id="tab-auditoria" class="tab oculto">
+        <section class="bloque">
+          <h2>Bitácora de auditoría <small>(append-only · este navegador)</small></h2>
+          <p class="chica">Cada registro lleva el hash SHA-256 del anterior. No se recorta ni se edita. Incluye accesos, emisión/revocación de credenciales, cambios de integración y traspaso de mando.</p>
+          <table class="cobertura tabla-v4"><thead><tr><th>#</th><th>Hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody id="tabla-auditoria"></tbody></table>
+        </section>
+      </div>
+
+
+      <div id="tab-integracion" class="tab oculto">
+        <p id="int-aviso-rol" class="aviso-corto">🛰️ Módulo de integración · solo Director(a) / Alfa (antes del traspaso).</p>
+        <p class="aviso-corto">⚠️ <b>Aviso legal:</b> el escaneo y las conexiones se hacen <b>únicamente</b> sobre redes, hosts y cámaras que el Director(a) lista y autoriza. No se escanea internet. En GitHub Pages el navegador no alcanza la LAN municipal: hace falta el servidor de integración en su red.</p>
+
+        <section class="bloque" id="sec-director">
+          <h2>1. Director(a) de Seguridad Pública</h2>
+          <div id="dir-estado"></div>
+          <form id="form-director" class="form-v4" autocomplete="off">
+            <p class="chica">Alfa da de alta al Director(a) en su presencia. El Director escribe su propia contraseña (mín. 12). Se genera una llave de firma (Ed25519 o ES256) cifrada en este navegador.</p>
+            <label for="dir-nombre">Nombre completo</label>
+            <input id="dir-nombre" required maxlength="120" data-solo-dir>
+            <label for="dir-cargo">Cargo</label>
+            <input id="dir-cargo" value="Director(a) de Seguridad Pública" maxlength="120" data-solo-dir>
+            <label for="dir-usuario">Usuario de acceso</label>
+            <input id="dir-usuario" required maxlength="32" autocapitalize="none" spellcheck="false" placeholder="p. ej. director.ssp" data-solo-dir>
+            <label for="dir-pw">Contraseña (la escribe el Director)</label>
+            <input id="dir-pw" type="password" minlength="12" autocomplete="new-password" data-solo-dir>
+            <label for="dir-pw2">Repetir contraseña</label>
+            <input id="dir-pw2" type="password" minlength="12" autocomplete="new-password" data-solo-dir>
+            <button class="boton-principal" type="submit" data-solo-dir>Registrar Director(a)</button>
+            <p id="dir-msg" class="msg-acceso" role="alert"></p>
+          </form>
+        </section>
+
+        <section class="bloque">
+          <h2>2. Conexión C4 / API</h2>
+          <form id="form-integracion" class="form-v4" autocomplete="off">
+            <label for="int-base">IP o URL base del C4 / API</label>
+            <input id="int-base" placeholder="https://c4.intranet.municipio.gob.mx" data-solo-dir>
+            <div class="fila-form">
+              <label for="int-ep-salud">Endpoint de salud <input id="int-ep-salud" placeholder="/salud (se completa solo)" data-solo-dir></label>
+            </div>
+            <label for="int-ep-incidentes">Endpoint de incidentes</label>
+            <input id="int-ep-incidentes" data-solo-dir>
+            <label for="int-ep-unidades">Endpoint de unidades / patrullas</label>
+            <input id="int-ep-unidades" data-solo-dir>
+            <label for="int-ep-camaras">Endpoint de cámaras (opcional)</label>
+            <input id="int-ep-camaras" data-solo-dir>
+            <label for="int-encabezado">Encabezado de la llave API</label>
+            <input id="int-encabezado" value="X-API-Key" data-solo-dir>
+            <label for="int-apikey">Llave API (opcional · se guarda cifrada en este navegador · nunca se sube al repositorio)</label>
+            <input id="int-apikey" type="password" autocomplete="off" data-solo-dir>
+            <label for="int-intervalo">Intervalo de sondeo (segundos)</label>
+            <input id="int-intervalo" type="number" min="5" max="300" value="15" data-solo-dir>
+            <label for="int-servidor">URL del servidor de integración (opcional · red municipal)</label>
+            <input id="int-servidor" placeholder="https://geo.intranet.municipio.gob.mx:8443" data-solo-dir>
+            <label class="auto"><input type="checkbox" id="int-usar-srv" data-solo-dir> Usar el servidor como intermediario (recomendado en producción)</label>
+            <div class="fila-form">
+              <button class="boton-principal" type="submit" data-solo-dir>Guardar</button>
+              <button id="btn-probar" class="boton-secundario" type="button" data-solo-dir>Probar conexión</button>
+              <button id="btn-demo-c4" class="boton-secundario" type="button" data-solo-dir>Usar endpoint de demo</button>
+              <button id="btn-conectar-srv" class="boton-secundario" type="button" data-solo-dir>Conectar servidor</button>
+            </div>
+            <p id="int-msg" class="msg-acceso" role="alert"></p>
+            <p id="srv-msg" class="msg-acceso" role="alert"></p>
+          </form>
+          <div id="int-prueba"></div>
+        </section>
+
+        <section class="bloque">
+          <h2>3. Cámaras / CCTV autorizadas</h2>
+          <p class="chica">Solo se registran las que el Director(a) autoriza. No se inventan feeds ni se muestran video de ejemplo.</p>
+          <form id="form-camara" class="form-v4" autocomplete="off">
+            <div class="fila-form">
+              <input id="cam-nombre" placeholder="Nombre" required data-solo-dir>
+              <input id="cam-url" placeholder="https://…" required data-solo-dir>
+            </div>
+            <div class="fila-form">
+              <input id="cam-lat" placeholder="Lat (opc.)" inputmode="decimal" data-solo-dir>
+              <input id="cam-lon" placeholder="Lon (opc.)" inputmode="decimal" data-solo-dir>
+              <button class="boton-secundario" type="submit" data-solo-dir>Autorizar cámara</button>
+            </div>
+          </form>
+          <ul id="cam-lista" class="lista-v4"></ul>
+        </section>
+
+        <section class="bloque">
+          <h2>4. Activar modo operativo</h2>
+          <div id="int-estado-modo"></div>
+          <form id="form-operativo" class="form-v4" autocomplete="off">
+            <div id="op-activar">
+              <p id="op-nota" class="chica"></p>
+              <label>Escriba la frase: <b id="op-frase-txt"></b></label>
+              <input id="op-frase" autocomplete="off" data-solo-dir>
+              <div id="op-pw-fila"><label for="op-pw">Contraseña del Director(a)</label><input id="op-pw" type="password" autocomplete="off" data-solo-dir></div>
+              <label class="auto"><input type="checkbox" id="op-ack" data-solo-dir> Confirmo que los endpoints están autorizados por el Director(a) y que, al activar, se detendrá la simulación.</label>
+              <button id="op-btn" class="boton-principal" type="submit" data-solo-dir>Activar modo operativo</button>
+            </div>
+            <div id="op-volver" hidden>
+              <button id="btn-volver-demo" class="boton-secundario" type="button" data-solo-dir>Volver a modo demostración</button>
+            </div>
+            <p id="op-msg" class="msg-acceso" role="alert"></p>
+          </form>
+          <div id="c4-estado"></div>
+        </section>
+
+        <section class="bloque">
+          <h2>5. Auto-escaneo (solo redes autorizadas)</h2>
+          <p class="aviso-corto">El escaneo corre <b>solo</b> sobre hosts/CIDR que el Director lista. Rangos CIDR y puertos ONVIF requieren el servidor de integración en la red municipal. Desde GitHub Pages el navegador solo puede intentar hosts HTTPS individuales.</p>
+          <form id="form-red" class="form-v4" autocomplete="off">
+            <label for="red-valor">Host o CIDR privado (/24–/30)</label>
+            <input id="red-valor" placeholder="192.168.10.0/24 o cam01.intranet.local" data-solo-dir>
+            <label class="auto"><input type="checkbox" id="red-ack" data-solo-dir> Declaro que estas redes son de la dependencia y yo las autorizo.</label>
+            <button class="boton-secundario" type="submit" data-solo-dir>Autorizar red</button>
+          </form>
+          <ul id="red-lista" class="lista-v4"></ul>
+          <label class="auto"><input type="checkbox" id="scan-ack" data-solo-dir> Autorizo el escaneo ahora sobre las redes listadas.</label>
+          <button id="btn-escanear" class="boton-principal" type="button" data-solo-dir>Escanear redes autorizadas</button>
+          <div id="scan-resultado"></div>
+          <h3>Dispositivos detectados (aprobar uno por uno)</h3>
+          <ul id="dev-lista" class="lista-v4"></ul>
+        </section>
+      </div>
+
+      <div id="tab-credenciales" class="tab oculto">
+        <p class="aviso-corto">🔑 Credenciales emitidas y <b>firmadas</b> por el Director(a) (Ed25519 o ES256). El QR abre la página de verificación. Soft-delete: el Director las revoca.</p>
+        <form id="form-credencial" class="form-v4" autocomplete="off">
+          <label for="cred-nombre">Nombre</label>
+          <input id="cred-nombre" required maxlength="120" data-solo-dir>
+          <label for="cred-empleado">Número de empleado</label>
+          <input id="cred-empleado" required maxlength="40" data-solo-dir>
+          <label for="cred-rol">Rol</label>
+          <select id="cred-rol" data-solo-dir>
+            <option value="charlie">Charlie · Autoridades</option>
+            <option value="bravo">Bravo · Supervisión</option>
+            <option value="delta">Delta · Unidad de campo</option>
+            <option value="eco">Eco · Escuela / vecinos</option>
+          </select>
+          <label for="cred-vence">Vencimiento (opcional)</label>
+          <input id="cred-vence" type="date" data-solo-dir>
+          <label for="cred-usuario">Usuario de acceso</label>
+          <input id="cred-usuario" maxlength="32" autocapitalize="none" spellcheck="false" placeholder="se sugiere a partir del nº de empleado" data-solo-dir>
+          <label for="cred-pw">Contraseña del usuario (mín. 10 · la escribe el titular)</label>
+          <input id="cred-pw" type="password" minlength="10" autocomplete="new-password" data-solo-dir>
+          <label for="cred-pw2">Repetir contraseña</label>
+          <input id="cred-pw2" type="password" minlength="10" autocomplete="new-password" data-solo-dir>
+          <div id="cred-dir-pw-fila"><label for="cred-dir-pw">Contraseña del Director(a) (firma)</label><input id="cred-dir-pw" type="password" autocomplete="off" data-solo-dir></div>
+          <button class="boton-principal" type="submit" data-solo-dir>Emitir y firmar</button>
+          <p id="cred-msg" class="msg-acceso" role="alert"></p>
+        </form>
+        <div id="cred-emitida" class="bloque oculto">
+          <h2>Credencial emitida</h2>
+          <p id="cred-emitida-txt"></p>
+          <div id="cred-qr" class="qr-box"></div>
+          <label>Token</label>
+          <textarea id="cred-token" rows="3" readonly></textarea>
+          <label>URL de verificación</label>
+          <input id="cred-url" readonly>
+          <button id="cred-copiar" class="boton-secundario" type="button">Copiar token</button>
+          <p class="chica">Entregue el QR al titular. La contraseña no se guarda en claro.</p>
+        </div>
+        <section class="bloque">
+          <h2>Credenciales emitidas</h2>
+          <table class="cobertura tabla-v4"><thead><tr><th>Id</th><th>Nombre</th><th>Empleado</th><th>Rol</th><th>Vence</th><th>Estado</th><th>Emitida</th><th></th></tr></thead><tbody id="cred-tabla"></tbody></table>
+        </section>
+        <p class="chica">Página pública de verificación: <a href="verificar.html" target="_blank" rel="noopener">verificar.html</a> (no requiere sesión).</p>
+      </div>
+
+      <div id="tab-traspaso" class="tab oculto">
+        <p class="aviso-corto">🏛️ <b>Transferir mando a Seguridad Pública.</b> Tras el traspaso, Alfa (Raúl Muñoz Villa) queda como «última instancia» y <b>no puede</b> reactivarse a sí mismo: solo el Director(a).</p>
+        <div id="mando-estado"></div>
+        <form id="form-traspaso" class="form-v4" autocomplete="off">
+          <div id="tr-form">
+            <label>Escriba la frase: <b id="tr-frase-txt"></b></label>
+            <input id="tr-frase" autocomplete="off" data-solo-dir>
+            <div id="tr-pw-fila"><label for="tr-pw">Contraseña del Director(a)</label><input id="tr-pw" type="password" autocomplete="off" data-solo-dir></div>
+            <label class="auto"><input type="checkbox" id="tr-ack" data-solo-dir> Entiendo que Alfa perderá el acceso de administración y solo el Director(a) podrá reactivarlo.</label>
+            <button class="boton-principal" type="submit" data-solo-dir>Transferir mando a Seguridad Pública</button>
+          </div>
+          <p id="tr-msg" class="msg-acceso" role="alert"></p>
+        </form>
+        <form id="form-reactivar" class="form-v4" autocomplete="off">
+          <div id="tr-reactivar" hidden>
+            <h2>Reactivar Alfa (última instancia)</h2>
+            <label>Escriba la frase: <b id="tr-re-frase-txt"></b></label>
+            <input id="tr-re-frase" autocomplete="off" data-solo-dir>
+            <div id="tr-re-pw-fila"><label for="tr-re-pw">Contraseña del Director(a)</label><input id="tr-re-pw" type="password" autocomplete="off" data-solo-dir></div>
+            <button class="boton-secundario" type="submit" data-solo-dir>Reactivar Alfa</button>
+            <p id="tr-re-msg" class="msg-acceso" role="alert"></p>
+          </div>
+        </form>
+      </div>
+
+      <div id="tab-horarios" class="tab oculto">
+        <p class="aviso-modelo">⚠️ <b>Modelo estimado (simulación), no datos oficiales por colonia u hora.</b> No existe una fuente pública de delitos por colonia y hora para Gómez Palacio; las zonas y horarios se estiman como se explica abajo.</p>
+        <p id="h-resumen" class="h-resumen"></p>
+        <section class="bloque">
+          <h2>Zonas de mayor riesgo estimado a esta hora</h2>
+          <ol id="top-zonas" class="top-zonas"></ol>
+          <p class="chica">Toque una zona para verla en el mapa. Las patrullas en rondín se reparten en proporción al riesgo estimado de la hora, con al menos una unidad por sector urbano; las unidades rurales se quedan en su sector.</p>
+        </section>
+        <section class="bloque">
+          <h2>Cobertura por sector</h2>
+          <table class="cobertura"><thead><tr><th>Sector</th><th>En rondín</th><th>Atendiendo</th></tr></thead><tbody id="cobertura"></tbody></table>
+        </section>
+        <section class="bloque">
+          <h2>Riesgo estimado total por hora <small>(toque una barra)</small></h2>
+          <div id="grafica-horas" class="grafica-horas"></div>
+        </section>
+        <section class="bloque metodo">
+          <h2>¿Cómo se estima?</h2>
+          <ul>
+            <li><b>Peso de cada tipo de delito:</b> su participación <b>real</b> en Gómez Palacio en 2025 (SESNSP, nivel municipal).</li>
+            <li><b>Perfil por hora y por día:</b> supuestos generales del modelo, coherentes con lo publicado para La Laguna por el <a href="https://observatoriodelalaguna.org.mx/publicacion/reporte-sobre-incidencia-delictiva-en-la-laguna-enero-mayo-2025/" target="_blank" rel="noopener">Observatorio de La Laguna (CCI Laguna, 26/06/2025)</a>: robos con violencia más frecuentes en la tarde y noche, y violencia familiar concentrada el domingo de 18:00 a 24:00.</li>
+            <li><b>Peso de cada zona:</b> población estimada (INEGI 2020, repartida por densidad de calles de OpenStreetMap) y comercios y servicios mapeados en OpenStreetMap. En zona rural, población INEGI de las localidades cercanas.</li>
+            <li><b>Ubicación de las zonas:</b> plazas, parques y puntos reales de OpenStreetMap y localidades INEGI. No se usa ningún dato delictivo por colonia ni calificaciones de “colonias peligrosas”.</li>
+          </ul>
+        </section>
+      </div>
+
+      <div id="tab-estadistica" class="tab oculto">
+        <div id="estadistica" class="estadistica"><p class="chica">Cargando…</p></div>
+      </div>
+    </aside>
+  </main>
+  <div id="cuenta-panico" class="modal-v4 oculto" role="alertdialog" aria-live="assertive">
+    <div class="caja-modal">
+      <h3>🚨 Botón de pánico silencioso <small>(simulación)</small></h3>
+      <p id="cp-escuela" class="chica"></p>
+      <div class="cuenta"><span id="cp-seg">5</span><small>s para enviar</small></div>
+      <p class="chica">Al enviarse: 1) 9-1-1 / C5 · 2) unidad más cercana · 3) vecinos verificados. Nada sale de este navegador.</p>
+      <button id="cp-cancelar" class="boton-principal" type="button">Cancelar</button>
+    </div>
+  </div>
+  <div id="modal-conexion" class="modal-v4 oculto" role="dialog" aria-modal="true" aria-labelledby="mc-titulo">
+    <div class="caja-modal">
+      <h3 id="mc-titulo">📡 Integración con C4 / API / CCTV</h3>
+      <p class="aviso-corto">La integración la configura y confirma el <b>Director(a) de Seguridad Pública</b> en la pestaña <b>Integración</b>. En GitHub Pages el modo por defecto es <b>demostración</b> (simulación local).</p>
+      <p class="chica">Límite honesto: el navegador <b>no puede</b> escanear la LAN municipal desde Pages. Para producción se instala el servidor de integración en la red de Seguridad Pública.</p>
+      <button id="mc-cancelar" class="boton-principal" type="button">Entendido</button>
+    </div>
+  </div>
+
+  <script src="../vendor/leaflet/leaflet.js"></script>
+  <script>window.L || document.write('<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><\/script>');</script>
+  <script src="../vendor/leaflet-heat.js"></script>
+  <script src="../vendor/markercluster/leaflet.markercluster.js"></script>
+  <script>(window.L && L.heatLayer) || document.write('<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" integrity="sha256-65UqrlgGoRAnKfKRuriH3eeDrOhZgZo1SCenduc+SGo=" crossorigin=""><\/script>');</script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="datos/paquete.js"></script>
+  <script src="../js/modelo.js"></script>
+  <script src="../js/estadistica.js"></script>
+  <script src="js/firma.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/centro.js"></script>
+  <script src="js/integracion.js"></script>
+  <script src="js/acceso.js"></script>
+</body>
+</html>

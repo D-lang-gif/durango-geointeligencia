@@ -1,0 +1,2 @@
+Endpoint de demostración para el recorrido del Director.
+Responde JSON con listas vacías. NO simula delitos ni cámaras.

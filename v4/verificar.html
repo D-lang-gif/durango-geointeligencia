@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="author" content="Raúl Muñoz Villa">
+  <title>Verificar credencial · Durango GeoInteligencia v4</title>
+  <link rel="stylesheet" href="../css/estilos.css">
+  <link rel="stylesheet" href="css/v4.css">
+</head>
+<body class="pagina-verificar">
+  <main class="caja-verificar">
+    <h1>🛰️ Verificar credencial</h1>
+    <p class="sub">Durango GeoInteligencia · Gómez Palacio, Dgo. · Lectura de QR / token firmado por el Director(a) de Seguridad Pública.</p>
+    <label for="token">Token o URL de la credencial</label>
+    <textarea id="token" rows="4" placeholder="Pegue el token DGI1… o la URL del QR"></textarea>
+    <button id="btn-verificar" class="boton-principal" type="button">Verificar</button>
+    <p id="msg" class="msg-acceso" role="alert"></p>
+    <div id="resultado" class="resultado-verificacion oculto"></div>
+    <p class="chica">La firma se comprueba con la llave pública incluida en la credencial. La <b>confianza</b> se decide si la huella (kid) coincide con una llave del Director registrada en este navegador o en el servidor de integración.</p>
+    <p class="nota-acceso">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
+    <p class="chica"><a href="./">← Volver al centro de mando</a></p>
+  </main>
+  <script src="js/firma.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    const F = window.DGI_FIRMA, $ = (id) => document.getElementById(id);
+    const el = (t, x, c) => { const n = document.createElement(t); if (x != null) n.textContent = x; if (c) n.className = c; return n; };
+    const TZ = "America/Mexico_City";
+    const fecha = (iso) => { try { return new Date(iso).toLocaleString("es-MX", { timeZone: TZ, hour12: false }); } catch (e) { return iso; } };
+    function llavesConocidas() {
+      const out = [];
+      try {
+        for (const pref of ["dgi_v4_cuentas", "dgi_v4_rec_cuentas"]) {
+          const L = JSON.parse(localStorage.getItem(pref) || "[]");
+          for (const c of L) if (c.rol === "director" && c.firma) {
+            out.push({ kid: c.firma.kid, alg: c.firma.alg, nombre: c.nombre, usuario: c.usuario });
+            for (const k of (c.claves || [])) out.push({ kid: k.kid, alg: k.alg, nombre: c.nombre, usuario: c.usuario });
+          }
+        }
+      } catch (e) { /* nada */ }
+      return out;
+    }
+    async function verificar() {
+      const msg = $("msg"), box = $("resultado"); msg.textContent = ""; box.classList.add("oculto"); box.replaceChildren();
+      let tok = $("token").value.trim();
+      if (!tok && location.hash) tok = location.hash.replace(/^#t=/, "");
+      if (!tok) { msg.className = "msg-acceso error"; msg.textContent = "Pegue un token o escanee un QR."; return; }
+      let r;
+      try { r = await F.verificarToken(tok); } catch (e) { msg.className = "msg-acceso error"; msg.textContent = e.message || String(e); return; }
+      const P = r.payload || {}, conocidas = llavesConocidas();
+      const confiada = conocidas.some((k) => k.kid === r.kid);
+      const vencida = P.vence && Date.parse(P.vence) < Date.now();
+      const rev = (() => {
+        try {
+          for (const pref of ["dgi_v4_credenciales", "dgi_v4_rec_credenciales"]) {
+            const L = JSON.parse(localStorage.getItem(pref) || "[]");
+            const c = L.find((x) => x.id === P.id); if (c && c.estado !== "vigente") return c.estado;
+          }
+        } catch (e) { /* nada */ }
+        return null;
+      })();
+      const valida = r.firmaOk && r.kidOk && confiada && !vencida && !rev;
+      const cab = el("div", null, "veredicto " + (valida ? "ok" : "mal"));
+      cab.appendChild(el("h2", valida ? "✅ VÁLIDA" : "❌ NO VÁLIDA"));
+      const ul = el("ul");
+      const filas = [
+        ["Firma criptográfica", r.firmaOk ? "correcta" : ("incorrecta" + (r.error ? " · " + r.error : ""))],
+        ["Huella del emisor (kid)", r.kid || "—"],
+        ["Coincide con el kid del payload", r.kidOk ? "sí" : "no"],
+        ["Llave conocida del Director (este navegador)", confiada ? "sí · de confianza" : "no registrada aquí (pudo emitirse en otro equipo o servidor)"],
+        ["Estado local", rev ? ("revocada (" + rev + ")") : (vencida ? "vencida" : "vigente / sin registro local de revocación")],
+        ["Titular", (P.nombre || "—") + " · empleado " + (P.empleado || "—")],
+        ["Rol", (P.rol || "—").toUpperCase()],
+        ["Emitida", P.emitido ? fecha(P.emitido) : "—"],
+        ["Vence", P.vence ? fecha(P.vence) : "sin vencimiento"],
+        ["Emisor", P.emisor ? ((P.emisor.nombre || "") + " (" + (P.emisor.usuario || "") + ")") : "—"],
+        ["Algoritmo", P.alg || "—"],
+        ["Id", P.id || "—"],
+      ];
+      for (const [k, v] of filas) { const li = el("li"); li.append(el("b", k + ": "), el("span", v)); ul.appendChild(li); }
+      box.replaceChildren(cab, ul);
+      box.classList.remove("oculto");
+      msg.className = "msg-acceso " + (valida ? "ok" : "error");
+      msg.textContent = valida ? "Credencial válida y de confianza en este equipo." : "Credencial no aceptada: revise firma, confianza del emisor, vigencia o revocación.";
+    }
+    $("btn-verificar").addEventListener("click", verificar);
+    if (location.hash) { $("token").value = decodeURIComponent(location.hash.replace(/^#t=/, "")); verificar(); }
+  })();
+  </script>
+</body>
+</html>
