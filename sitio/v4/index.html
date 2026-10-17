@@ -33,12 +33,13 @@
       </div>
       <button id="btn-entrar" class="boton-principal" type="submit">Entrar</button>
       <p id="msg-acceso" class="msg-acceso" role="alert"></p>
-      <p class="nota-acceso">Usuarios por rol: <b>alfa</b> · <b>charlie</b> · <b>bravo</b> · <b>delta</b> · <b>eco</b> (contraseñas por separado).</p>
-      <p class="nota-acceso">PROTOTIPO DE DEMOSTRACIÓN. Patrullas, incidentes y teléfonos son <b>datos simulados</b>; no provienen de C4/C5, del 911 ni del IFT.</p>
+      <p class="nota-acceso">Usuarios por rol: <b>alfa</b> · <b>charlie</b> · <b>bravo</b> · <b>delta</b> · <b>eco</b> (contraseñas por separado). El Director(a) se da de alta desde el panel de Alfa.</p>
+      <p class="nota-acceso">PROTOTIPO DE DEMOSTRACIÓN. Patrullas, incidentes y teléfonos son <b>datos simulados</b>; no provienen de C4/C5, del 911 ni del IFT. Listo para integración con C4/API/CCTV autorizados por el Director.</p>
       <p class="nota-acceso" data-testid="autor">Autor: Raúl Muñoz Villa · © 2026 · Todos los derechos reservados</p>
     </form>
   </div>
 
+  <div id="banner-modo" class="banner-modo" role="status">Modo demostración — listo para integración con C4/API/CCTV autorizados por el Director</div>
   <header class="barra">
     <div class="marca">
       <span class="logo">🛰️</span>
@@ -51,7 +52,9 @@
       <span class="chip demo">DEMO · DATOS SIMULADOS</span>
       <span id="chip-rol" class="chip rol">–</span>
       <span class="chip conexion conectado" title="La simulación corre en este navegador">● Simulación local</span>
-      <button id="btn-conexion" class="chip conexion-real" type="button" role="switch" aria-checked="false" title="Conexión real: bloqueada">🔒 Conexión real <span class="sw-mini"></span></button>
+      <button id="btn-conexion" class="chip conexion-real" type="button" role="switch" aria-checked="false" title="Modo demostración">🔒 Modo demostración <span class="sw-mini"></span></button>
+      <button id="btn-recorrido" class="chip" type="button" hidden title="Recorrido demo del Director">🎭 Recorrido Director</button>
+      <button id="btn-salir-recorrido" class="chip" type="button" hidden>Salir del recorrido</button>
       <span id="reloj" class="chip reloj">--:--:--</span>
       <button id="btn-salir" class="chip salir" type="button">Salir</button>
     </div>
@@ -78,6 +81,9 @@
       <button id="asa" class="asa" type="button" aria-expanded="false"><span class="barrita"></span><span id="asa-txt">▲ Ver panel</span></button>
       <nav class="pestanas" role="tablist">
         <button type="button" data-tab="tab-mando">Mando</button>
+        <button type="button" data-tab="tab-integracion">Integración</button>
+        <button type="button" data-tab="tab-credenciales">Credenciales</button>
+        <button type="button" data-tab="tab-traspaso">Traspaso</button>
         <button type="button" data-tab="tab-operacion" class="activo">Operación</button>
         <button type="button" data-tab="tab-unidad">Mi unidad</button>
         <button type="button" data-tab="tab-miescuela">Mi escuela</button>
@@ -221,9 +227,194 @@
 
       <div id="tab-auditoria" class="tab oculto">
         <section class="bloque">
-          <h2>Bitácora de auditoría <small>(este navegador · simulado)</small></h2>
+          <h2>Bitácora de auditoría <small>(append-only · este navegador)</small></h2>
+          <p class="chica">Cada registro lleva el hash SHA-256 del anterior. No se recorta ni se edita. Incluye accesos, emisión/revocación de credenciales, cambios de integración y traspaso de mando.</p>
           <table class="cobertura tabla-v4"><thead><tr><th>#</th><th>Hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody id="tabla-auditoria"></tbody></table>
         </section>
+      </div>
+
+
+      <div id="tab-integracion" class="tab oculto">
+        <p id="int-aviso-rol" class="aviso-corto">🛰️ Módulo de integración · solo Director(a) / Alfa (antes del traspaso).</p>
+        <p class="aviso-corto">⚠️ <b>Aviso legal:</b> el escaneo y las conexiones se hacen <b>únicamente</b> sobre redes, hosts y cámaras que el Director(a) lista y autoriza. No se escanea internet. En GitHub Pages el navegador no alcanza la LAN municipal: hace falta el servidor de integración en su red.</p>
+
+        <section class="bloque" id="sec-director">
+          <h2>1. Director(a) de Seguridad Pública</h2>
+          <div id="dir-estado"></div>
+          <form id="form-director" class="form-v4" autocomplete="off">
+            <p class="chica">Alfa da de alta al Director(a) en su presencia. El Director escribe su propia contraseña (mín. 12). Se genera una llave de firma (Ed25519 o ES256) cifrada en este navegador.</p>
+            <label for="dir-nombre">Nombre completo</label>
+            <input id="dir-nombre" required maxlength="120" data-solo-dir>
+            <label for="dir-cargo">Cargo</label>
+            <input id="dir-cargo" value="Director(a) de Seguridad Pública" maxlength="120" data-solo-dir>
+            <label for="dir-usuario">Usuario de acceso</label>
+            <input id="dir-usuario" required maxlength="32" autocapitalize="none" spellcheck="false" placeholder="p. ej. director.ssp" data-solo-dir>
+            <label for="dir-pw">Contraseña (la escribe el Director)</label>
+            <input id="dir-pw" type="password" minlength="12" autocomplete="new-password" data-solo-dir>
+            <label for="dir-pw2">Repetir contraseña</label>
+            <input id="dir-pw2" type="password" minlength="12" autocomplete="new-password" data-solo-dir>
+            <button class="boton-principal" type="submit" data-solo-dir>Registrar Director(a)</button>
+            <p id="dir-msg" class="msg-acceso" role="alert"></p>
+          </form>
+        </section>
+
+        <section class="bloque">
+          <h2>2. Conexión C4 / API</h2>
+          <form id="form-integracion" class="form-v4" autocomplete="off">
+            <label for="int-base">IP o URL base del C4 / API</label>
+            <input id="int-base" placeholder="https://c4.intranet.municipio.gob.mx" data-solo-dir>
+            <div class="fila-form">
+              <label for="int-ep-salud">Endpoint de salud <input id="int-ep-salud" placeholder="/salud (se completa solo)" data-solo-dir></label>
+            </div>
+            <label for="int-ep-incidentes">Endpoint de incidentes</label>
+            <input id="int-ep-incidentes" data-solo-dir>
+            <label for="int-ep-unidades">Endpoint de unidades / patrullas</label>
+            <input id="int-ep-unidades" data-solo-dir>
+            <label for="int-ep-camaras">Endpoint de cámaras (opcional)</label>
+            <input id="int-ep-camaras" data-solo-dir>
+            <label for="int-encabezado">Encabezado de la llave API</label>
+            <input id="int-encabezado" value="X-API-Key" data-solo-dir>
+            <label for="int-apikey">Llave API (opcional · se guarda cifrada en este navegador · nunca se sube al repositorio)</label>
+            <input id="int-apikey" type="password" autocomplete="off" data-solo-dir>
+            <label for="int-intervalo">Intervalo de sondeo (segundos)</label>
+            <input id="int-intervalo" type="number" min="5" max="300" value="15" data-solo-dir>
+            <label for="int-servidor">URL del servidor de integración (opcional · red municipal)</label>
+            <input id="int-servidor" placeholder="https://geo.intranet.municipio.gob.mx:8443" data-solo-dir>
+            <label class="auto"><input type="checkbox" id="int-usar-srv" data-solo-dir> Usar el servidor como intermediario (recomendado en producción)</label>
+            <div class="fila-form">
+              <button class="boton-principal" type="submit" data-solo-dir>Guardar</button>
+              <button id="btn-probar" class="boton-secundario" type="button" data-solo-dir>Probar conexión</button>
+              <button id="btn-demo-c4" class="boton-secundario" type="button" data-solo-dir>Usar endpoint de demo</button>
+              <button id="btn-conectar-srv" class="boton-secundario" type="button" data-solo-dir>Conectar servidor</button>
+            </div>
+            <p id="int-msg" class="msg-acceso" role="alert"></p>
+            <p id="srv-msg" class="msg-acceso" role="alert"></p>
+          </form>
+          <div id="int-prueba"></div>
+        </section>
+
+        <section class="bloque">
+          <h2>3. Cámaras / CCTV autorizadas</h2>
+          <p class="chica">Solo se registran las que el Director(a) autoriza. No se inventan feeds ni se muestran video de ejemplo.</p>
+          <form id="form-camara" class="form-v4" autocomplete="off">
+            <div class="fila-form">
+              <input id="cam-nombre" placeholder="Nombre" required data-solo-dir>
+              <input id="cam-url" placeholder="https://…" required data-solo-dir>
+            </div>
+            <div class="fila-form">
+              <input id="cam-lat" placeholder="Lat (opc.)" inputmode="decimal" data-solo-dir>
+              <input id="cam-lon" placeholder="Lon (opc.)" inputmode="decimal" data-solo-dir>
+              <button class="boton-secundario" type="submit" data-solo-dir>Autorizar cámara</button>
+            </div>
+          </form>
+          <ul id="cam-lista" class="lista-v4"></ul>
+        </section>
+
+        <section class="bloque">
+          <h2>4. Activar modo operativo</h2>
+          <div id="int-estado-modo"></div>
+          <form id="form-operativo" class="form-v4" autocomplete="off">
+            <div id="op-activar">
+              <p id="op-nota" class="chica"></p>
+              <label>Escriba la frase: <b id="op-frase-txt"></b></label>
+              <input id="op-frase" autocomplete="off" data-solo-dir>
+              <div id="op-pw-fila"><label for="op-pw">Contraseña del Director(a)</label><input id="op-pw" type="password" autocomplete="off" data-solo-dir></div>
+              <label class="auto"><input type="checkbox" id="op-ack" data-solo-dir> Confirmo que los endpoints están autorizados por el Director(a) y que, al activar, se detendrá la simulación.</label>
+              <button id="op-btn" class="boton-principal" type="submit" data-solo-dir>Activar modo operativo</button>
+            </div>
+            <div id="op-volver" hidden>
+              <button id="btn-volver-demo" class="boton-secundario" type="button" data-solo-dir>Volver a modo demostración</button>
+            </div>
+            <p id="op-msg" class="msg-acceso" role="alert"></p>
+          </form>
+          <div id="c4-estado"></div>
+        </section>
+
+        <section class="bloque">
+          <h2>5. Auto-escaneo (solo redes autorizadas)</h2>
+          <p class="aviso-corto">El escaneo corre <b>solo</b> sobre hosts/CIDR que el Director lista. Rangos CIDR y puertos ONVIF requieren el servidor de integración en la red municipal. Desde GitHub Pages el navegador solo puede intentar hosts HTTPS individuales.</p>
+          <form id="form-red" class="form-v4" autocomplete="off">
+            <label for="red-valor">Host o CIDR privado (/24–/30)</label>
+            <input id="red-valor" placeholder="192.168.10.0/24 o cam01.intranet.local" data-solo-dir>
+            <label class="auto"><input type="checkbox" id="red-ack" data-solo-dir> Declaro que estas redes son de la dependencia y yo las autorizo.</label>
+            <button class="boton-secundario" type="submit" data-solo-dir>Autorizar red</button>
+          </form>
+          <ul id="red-lista" class="lista-v4"></ul>
+          <label class="auto"><input type="checkbox" id="scan-ack" data-solo-dir> Autorizo el escaneo ahora sobre las redes listadas.</label>
+          <button id="btn-escanear" class="boton-principal" type="button" data-solo-dir>Escanear redes autorizadas</button>
+          <div id="scan-resultado"></div>
+          <h3>Dispositivos detectados (aprobar uno por uno)</h3>
+          <ul id="dev-lista" class="lista-v4"></ul>
+        </section>
+      </div>
+
+      <div id="tab-credenciales" class="tab oculto">
+        <p class="aviso-corto">🔑 Credenciales emitidas y <b>firmadas</b> por el Director(a) (Ed25519 o ES256). El QR abre la página de verificación. Soft-delete: el Director las revoca.</p>
+        <form id="form-credencial" class="form-v4" autocomplete="off">
+          <label for="cred-nombre">Nombre</label>
+          <input id="cred-nombre" required maxlength="120" data-solo-dir>
+          <label for="cred-empleado">Número de empleado</label>
+          <input id="cred-empleado" required maxlength="40" data-solo-dir>
+          <label for="cred-rol">Rol</label>
+          <select id="cred-rol" data-solo-dir>
+            <option value="charlie">Charlie · Autoridades</option>
+            <option value="bravo">Bravo · Supervisión</option>
+            <option value="delta">Delta · Unidad de campo</option>
+            <option value="eco">Eco · Escuela / vecinos</option>
+          </select>
+          <label for="cred-vence">Vencimiento (opcional)</label>
+          <input id="cred-vence" type="date" data-solo-dir>
+          <label for="cred-usuario">Usuario de acceso</label>
+          <input id="cred-usuario" maxlength="32" autocapitalize="none" spellcheck="false" placeholder="se sugiere a partir del nº de empleado" data-solo-dir>
+          <label for="cred-pw">Contraseña del usuario (mín. 10 · la escribe el titular)</label>
+          <input id="cred-pw" type="password" minlength="10" autocomplete="new-password" data-solo-dir>
+          <label for="cred-pw2">Repetir contraseña</label>
+          <input id="cred-pw2" type="password" minlength="10" autocomplete="new-password" data-solo-dir>
+          <div id="cred-dir-pw-fila"><label for="cred-dir-pw">Contraseña del Director(a) (firma)</label><input id="cred-dir-pw" type="password" autocomplete="off" data-solo-dir></div>
+          <button class="boton-principal" type="submit" data-solo-dir>Emitir y firmar</button>
+          <p id="cred-msg" class="msg-acceso" role="alert"></p>
+        </form>
+        <div id="cred-emitida" class="bloque oculto">
+          <h2>Credencial emitida</h2>
+          <p id="cred-emitida-txt"></p>
+          <div id="cred-qr" class="qr-box"></div>
+          <label>Token</label>
+          <textarea id="cred-token" rows="3" readonly></textarea>
+          <label>URL de verificación</label>
+          <input id="cred-url" readonly>
+          <button id="cred-copiar" class="boton-secundario" type="button">Copiar token</button>
+          <p class="chica">Entregue el QR al titular. La contraseña no se guarda en claro.</p>
+        </div>
+        <section class="bloque">
+          <h2>Credenciales emitidas</h2>
+          <table class="cobertura tabla-v4"><thead><tr><th>Id</th><th>Nombre</th><th>Empleado</th><th>Rol</th><th>Vence</th><th>Estado</th><th>Emitida</th><th></th></tr></thead><tbody id="cred-tabla"></tbody></table>
+        </section>
+        <p class="chica">Página pública de verificación: <a href="verificar.html" target="_blank" rel="noopener">verificar.html</a> (no requiere sesión).</p>
+      </div>
+
+      <div id="tab-traspaso" class="tab oculto">
+        <p class="aviso-corto">🏛️ <b>Transferir mando a Seguridad Pública.</b> Tras el traspaso, Alfa (Raúl Muñoz Villa) queda como «última instancia» y <b>no puede</b> reactivarse a sí mismo: solo el Director(a).</p>
+        <div id="mando-estado"></div>
+        <form id="form-traspaso" class="form-v4" autocomplete="off">
+          <div id="tr-form">
+            <label>Escriba la frase: <b id="tr-frase-txt"></b></label>
+            <input id="tr-frase" autocomplete="off" data-solo-dir>
+            <div id="tr-pw-fila"><label for="tr-pw">Contraseña del Director(a)</label><input id="tr-pw" type="password" autocomplete="off" data-solo-dir></div>
+            <label class="auto"><input type="checkbox" id="tr-ack" data-solo-dir> Entiendo que Alfa perderá el acceso de administración y solo el Director(a) podrá reactivarlo.</label>
+            <button class="boton-principal" type="submit" data-solo-dir>Transferir mando a Seguridad Pública</button>
+          </div>
+          <p id="tr-msg" class="msg-acceso" role="alert"></p>
+        </form>
+        <form id="form-reactivar" class="form-v4" autocomplete="off">
+          <div id="tr-reactivar" hidden>
+            <h2>Reactivar Alfa (última instancia)</h2>
+            <label>Escriba la frase: <b id="tr-re-frase-txt"></b></label>
+            <input id="tr-re-frase" autocomplete="off" data-solo-dir>
+            <div id="tr-re-pw-fila"><label for="tr-re-pw">Contraseña del Director(a)</label><input id="tr-re-pw" type="password" autocomplete="off" data-solo-dir></div>
+            <button class="boton-secundario" type="submit" data-solo-dir>Reactivar Alfa</button>
+            <p id="tr-re-msg" class="msg-acceso" role="alert"></p>
+          </div>
+        </form>
       </div>
 
       <div id="tab-horarios" class="tab oculto">
@@ -268,18 +459,12 @@
     </div>
   </div>
   <div id="modal-conexion" class="modal-v4 oculto" role="dialog" aria-modal="true" aria-labelledby="mc-titulo">
-    <form id="form-conexion" class="caja-modal" autocomplete="off">
-      <h3 id="mc-titulo">🔒 Conexión real · bloqueada</h3>
-      <p class="aviso-corto">Esta demo <b>no tiene conexión real configurada</b> (servidor pendiente). Todo lo que se ve es <b>simulado</b> y no se llama a ningún sistema real (9-1-1, C5, SMS).</p>
-      <p class="chica">Para habilitarla se requieren <b>dos personas</b>: la credencial de <b>Alfa</b> (Raúl Muñoz Villa) <b>y</b> la confirmación de un(a) <b>Director(a) de Seguridad Pública</b>. Tras 3 intentos fallidos se bloquea, se borran los datos de sesión de este sitio en este navegador y se registra en la bitácora.</p>
-      <label for="mc-alfa">Contraseña de Alfa</label>
-      <input id="mc-alfa" type="password" autocomplete="off" autocapitalize="none" spellcheck="false">
-      <label for="mc-dir">Código de confirmación del Director(a) de Seguridad Pública</label>
-      <input id="mc-dir" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="no configurado en esta demo">
-      <p id="mc-msg" class="msg-acceso" role="alert"></p>
-      <p id="mc-intentos" class="chica"></p>
-      <div class="fila-form"><button id="mc-cancelar" class="boton-secundario" type="button">Cerrar</button><button id="mc-enviar" class="boton-principal" type="submit">Intentar habilitar</button></div>
-    </form>
+    <div class="caja-modal">
+      <h3 id="mc-titulo">📡 Integración con C4 / API / CCTV</h3>
+      <p class="aviso-corto">La integración la configura y confirma el <b>Director(a) de Seguridad Pública</b> en la pestaña <b>Integración</b>. En GitHub Pages el modo por defecto es <b>demostración</b> (simulación local).</p>
+      <p class="chica">Límite honesto: el navegador <b>no puede</b> escanear la LAN municipal desde Pages. Para producción se instala el servidor de integración en la red de Seguridad Pública.</p>
+      <button id="mc-cancelar" class="boton-principal" type="button">Entendido</button>
+    </div>
   </div>
 
   <script src="../vendor/leaflet/leaflet.js"></script>
@@ -287,11 +472,14 @@
   <script src="../vendor/leaflet-heat.js"></script>
   <script src="../vendor/markercluster/leaflet.markercluster.js"></script>
   <script>(window.L && L.heatLayer) || document.write('<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" integrity="sha256-65UqrlgGoRAnKfKRuriH3eeDrOhZgZo1SCenduc+SGo=" crossorigin=""><\/script>');</script>
+  <script src="vendor/qrcode.js"></script>
   <script src="datos/paquete.js"></script>
   <script src="../js/modelo.js"></script>
   <script src="../js/estadistica.js"></script>
+  <script src="js/firma.js"></script>
   <script src="js/app.js"></script>
   <script src="js/centro.js"></script>
+  <script src="js/integracion.js"></script>
   <script src="js/acceso.js"></script>
 </body>
 </html>
