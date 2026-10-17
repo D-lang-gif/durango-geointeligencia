@@ -2,8 +2,12 @@
 
 Prototipo de geointeligencia para **Seguridad Pública de Gómez Palacio, Durango**: mapa de patrullas, llamadas de emergencia simuladas, asignación de la patrulla más cercana **por tiempo de manejo sobre calles reales**, localidades del INEGI y mapa de calor.
 
-**Sitio de demostración:** https://d-lang-gif.github.io/durango-geointeligencia/
+**Sitio de demostración (v3):** https://d-lang-gif.github.io/durango-geointeligencia/
+
+**Sitio v4 · Centro de mando (listo para integración):** https://d-lang-gif.github.io/durango-geointeligencia/v4/
 (requiere usuario y contraseña; se entregan por separado y no están en este repositorio).
+
+**Integración C4/API/CCTV / credenciales firmadas / traspaso de mando:** ver [documentos/LEEME_v4_integracion.md](documentos/LEEME_v4_integracion.md). El sitio público permanece en **modo demostración** por defecto; Seguridad Pública activa el modo operativo desde el panel del Director (hace falta alojar `servidor/integracion/` en su red para escanear la LAN municipal).
 
 **Autor: Raúl Muñoz Villa** · © 2026 · Todos los derechos reservados (ver [LICENSE](LICENSE)).
 
@@ -36,7 +40,9 @@ Prototipo de geointeligencia para **Seguridad Pública de Gómez Palacio, Durang
 | Carpeta | Contenido |
 |---|---|
 | `sitio/` | Sitio estático publicado en GitHub Pages: `index.html`, `css/`, `js/acceso.js` (acceso), `js/modelo.js` (modelo estimado de riesgo), `js/estadistica.js` (pestaña SESNSP), `js/app.js` (mapa y simulación), `datos/paquete.js` (datos **cifrados**). |
-| `servidor/` | Versión con servidor (**backend de producción a futuro**): FastAPI + PostgreSQL/PostGIS + WebSocket, con `docker-compose.yml`. |
+| `servidor/` | Backend de mapa (FastAPI + PostGIS) y **`servidor/integracion/`** (API opcional en la red municipal: prueba C4, proxy, escaneo autorizado, cifrado en reposo). |
+| `sitio/v4/` | Centro de mando v4: roles, escuelas, pánico simulado, **módulo de integración del Director**, credenciales QR, traspaso de mando. |
+| `documentos/LEEME_v4_integracion.md` | Cómo activa el Director la integración, QR, traspaso y límites honestos. |
 | `datos/` | Datos fuente en CSV/GeoJSON/JSON: localidades INEGI, ejidos verificados, integrantes de perímetros, límite municipal simplificado, extractos SESNSP de Gómez Palacio, zonas del modelo y flota simulada. Ver `datos/FUENTES.md`. |
 | `scripts/construir_paquete.py` | Genera `sitio/datos/paquete.js` a partir de `datos/` (gzip + AES-256-GCM). `scripts/resumir_sesnsp.py` resume los CSV del SESNSP y `scripts/preparar_zonas.py` arma las zonas del modelo. |
 | `documentos/` | Documentos del proyecto en Markdown (plan de escalamiento). No se publican en GitHub Pages. |
