@@ -3,7 +3,9 @@
    Agrega a la v3: capa de escuelas SEP (agrupadas por inmueble, perímetros y racimos), botón de pánico silencioso simulado
    (9-1-1/C5 → unidad más cercana → vecinos verificados, con 5 s para cancelar), categorías de incidente, violencia familiar en
    modo discreto, KPIs, feed, gráfica de tiempos de reacción, bitácora de auditoría, licencias simuladas y compuerta «Conexión real».
-   NO se llama a ningún sistema real (9-1-1, C5, SMS). Todo vive en este navegador (localStorage). */
+   NO se llama a ningún sistema real (9-1-1, C5, SMS). Todo vive en este navegador (localStorage).
+   v4 integración (integracion.js): rol DIRECTOR (Director(a) de Seguridad Pública), módulo de integración C4/API/CCTV, modo
+   operativo (sin simulación), credenciales firmadas, traspaso de mando y bitácora append-only (sin recortes, con ancla). */
 (function () {
   "use strict";
   const TZ = "America/Mexico_City", FACTOR = 15;
@@ -24,7 +26,8 @@
 
   // ---------------- Roles: qué paneles ve cada uno ----------------
   const ROLES = {
-    alfa: { etq: "ALFA", desc: "Administrador", tabs: ["mando", "operacion", "panico", "escuelas", "vf", "horarios", "estadistica", "licencias", "auditoria"], simular: true, cerrar: true },
+    alfa: { etq: "ALFA", desc: "Administrador", tabs: ["mando", "operacion", "integracion", "credenciales", "traspaso", "panico", "escuelas", "vf", "horarios", "estadistica", "licencias", "auditoria"], simular: true, cerrar: true },
+    director: { etq: "DIRECTOR", desc: "Director(a) de Seguridad Pública", tabs: ["integracion", "mando", "operacion", "credenciales", "traspaso", "panico", "escuelas", "vf", "horarios", "estadistica", "auditoria"], simular: true, cerrar: true },
     charlie: { etq: "CHARLIE", desc: "Autoridades", tabs: ["mando", "operacion", "panico", "escuelas", "vf", "estadistica", "auditoria"] },
     bravo: { etq: "BRAVO", desc: "Supervisión", tabs: ["mando", "operacion", "panico", "escuelas", "horarios"], simular: true, cerrar: true },
     delta: { etq: "DELTA", desc: "Unidad", tabs: ["unidad", "panico", "escuelas"] },
@@ -33,7 +36,7 @@
   let S = null, R = null, G = null, D = null;
 
   // ---------------- Bitácora de auditoría (encadenada con SHA-256; se muestra con textContent) ----------------
-  const CLAVE_AUD = "dgi_v4_auditoria";
+  const CLAVE_AUD = "dgi_v4_auditoria", CLAVE_ANCLA = "dgi_v4_auditoria_ancla";
   let colaAud = Promise.resolve();
   async function sha256(t) { return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t))), (b) => b.toString(16).padStart(2, "0")).join(""); }
   function auditar(ses, accion, detalle) {
@@ -42,14 +45,25 @@
       const prev = L.length ? L[L.length - 1].hash : "0".repeat(64);
       const e = { n: L.length + 1, t: Date.now(), usuario: (ses && ses.usuario) || "-", rol: (ses && ses.rol) || "-", accion, detalle: detalle || "", prev };
       e.hash = await sha256(JSON.stringify([e.n, e.t, e.usuario, e.rol, e.accion, e.detalle, e.prev]));
-      L.push(e); escribir(CLAVE_AUD, L.slice(-400));
+      L.push(e); escribir(CLAVE_AUD, L); escribir(CLAVE_ANCLA, { n: e.n, hash: e.hash }); // append-only: nunca se recorta ni se edita
+      if (window.DGI_INT && window.DGI_INT.espejoAuditoria) window.DGI_INT.espejoAuditoria(e);
       if (S) pintarAuditoria();
     }).catch(() => {});
     return colaAud;
   }
+  async function verificarAuditoria() { // recalcula la cadena completa y la compara con el ancla
+    const L = leer(CLAVE_AUD, []), A = leer(CLAVE_ANCLA, null); let prev = "0".repeat(64);
+    for (const [k, e] of L.entries()) {
+      const h = await sha256(JSON.stringify([e.n, e.t, e.usuario, e.rol, e.accion, e.detalle, e.prev]));
+      if (e.n !== k + 1 || e.prev !== prev || e.hash !== h) return { ok: false, n: L.length, motivo: `registro #${k + 1} alterado o fuera de orden` };
+      prev = e.hash;
+    }
+    if (A && (A.n !== L.length || A.hash !== prev)) return { ok: false, n: L.length, motivo: "faltan registros al final (el ancla no coincide)" };
+    return { ok: true, n: L.length, ultimo: prev };
+  }
   function pintarAuditoria() {
     const tb = $("tabla-auditoria"); if (!tb || !R || !R.tabs.includes("auditoria")) return;
-    const L = leer(CLAVE_AUD, []).slice(-80).reverse();
+    const L = leer(CLAVE_AUD, []).slice(-200).reverse();
     tb.replaceChildren(...L.map((e) => {
       const tr = el("tr"); if (/fallid|bloqu/.test(e.accion)) tr.className = "mal";
       for (const v of [e.n, hms(e.t), `${e.usuario} (${String(e.rol).toUpperCase()})`, e.accion, e.detalle]) tr.appendChild(el("td", String(v)));
@@ -313,6 +327,12 @@
   function tarjeta(num, lbl, cls, sub) { const d = el("div", null, "tarjeta " + (cls || "")); d.append(el("span", String(num), "num"), el("span", lbl, "lbl")); if (sub) d.appendChild(el("span", sub, "sub")); return d; }
   function pintarKPIs() {
     const k = $("kpis"); if (!k || !G) return;
+    if (window.DGI_MODO && window.DGI_MODO.operativo()) { // modo operativo: solo lo que entrega el C4 (nada simulado)
+      const r = window.DGI_INT.resumen();
+      k.replaceChildren(tarjeta(r.unidades == null ? "—" : r.unidades, "🚔 Unidades (C4)"), tarjeta(r.incidentes == null ? "—" : r.incidentes, "🚨 Incidentes (C4)", "alerta"),
+        tarjeta(r.camaras, "📹 Cámaras autorizadas"), tarjeta(r.estado, "📡 Conexión C4", r.ok ? "verde" : "alerta", r.ultima ? `última respuesta ${hms(r.ultima)}` : "esperando datos del C4"));
+      return;
+    }
     const E = G.estado(), inc = E.incidentes, us = E.unidades, cu = (c) => inc.filter((i) => i.categoria === c).length;
     const act = alertas().filter((a) => a.estado === "activa").length, med = mediana(TIEMPOS.map((x) => x.min));
     k.replaceChildren(
@@ -324,7 +344,7 @@
       tarjeta(cu("transito"), "🚧 Tránsito", "naranja"),
       tarjeta(med == null ? "—" : med.toFixed(1), "⏱ Reacción (mediana, min)"),
       tarjeta(D.escuelas_meta.registros.toLocaleString("es-MX"), "🏫 Escuelas SEP", "", `${D.escuelas_meta.inmuebles} inmuebles`),
-      tarjeta(leer(CLAVE_CONEX, {}).bloqueada ? "BLOQ." : "OFF", "🔒 Conexión real", "alerta", "simulación"));
+      tarjeta("DEMO", "📡 Integración C4", "alerta", "modo demostración"));
   }
 
   // ---------------- Violencia familiar (modo discreto) ----------------
@@ -372,45 +392,14 @@
     auditar(S, "incidente_registrado", vf ? "violencia familiar (detalle reservado)" : tipo);
   }
 
-  // ---------------- Compuerta «Conexión real» (bloqueada; no configurada en la demo) ----------------
-  const CLAVE_CONEX = "dgi_v4_conexion", MAX_CONEX = 3;
+  // ---------------- Chip de modo (sustituye a la compuerta «Conexión real» de la v4 inicial) ----------------
+  // La integración real la configura y confirma el Director(a) en la pestaña «Integración» (integracion.js).
   function pintarConexion() {
-    const st = leer(CLAVE_CONEX, { fallos: 0 }), b = $("btn-conexion");
-    b.classList.toggle("bloqueada", !!st.bloqueada); b.title = st.bloqueada ? "Conexión real: BLOQUEADA tras 3 intentos fallidos" : "Conexión real: apagada (no configurada en esta demo)";
-    $("mc-titulo").textContent = st.bloqueada ? "🔒 Conexión real · BLOQUEADA" : "🔒 Conexión real · apagada";
-    $("mc-intentos").textContent = st.bloqueada ? "Bloqueada en este navegador tras 3 intentos fallidos." : `Intentos fallidos: ${st.fallos || 0} de ${MAX_CONEX}.`;
-    $("mc-enviar").disabled = !!st.bloqueada;
+    const op = !!(window.DGI_MODO && window.DGI_MODO.operativo()), b = $("btn-conexion");
+    b.classList.toggle("operativo", op); b.setAttribute("aria-checked", String(op));
+    b.firstChild.textContent = op ? "📡 Modo operativo " : "🔒 Modo demostración ";
+    b.title = op ? "Modo operativo: datos del C4 configurado por el Director(a)" : "Modo demostración: la integración la activa el Director(a) de Seguridad Pública";
   }
-  async function borrarDatosDelSitio() {
-    try { localStorage.clear(); } catch (e) { /* nada */ }
-    try { sessionStorage.clear(); } catch (e) { /* nada */ }
-    try { if (indexedDB.databases) for (const db of await indexedDB.databases()) if (db.name) indexedDB.deleteDatabase(db.name); } catch (e) { /* nada */ }
-    try { if (window.caches) for (const k of await caches.keys()) await caches.delete(k); } catch (e) { /* nada */ }
-  }
-  async function intentarConexion(ev) {
-    ev.preventDefault();
-    const st = leer(CLAVE_CONEX, { fallos: 0 }); if (st.bloqueada) return;
-    const btn = $("mc-enviar"), msg = $("mc-msg"); btn.disabled = true; msg.className = "msg-acceso"; msg.textContent = "Verificando…";
-    let alfaOk = false; try { alfaOk = await window.DGI_verificarAlfa($("mc-alfa").value); } catch (e) { alfaOk = false; }
-    $("mc-alfa").value = "";
-    st.fallos = (st.fallos || 0) + 1;
-    const motivo = alfaOk ? "credencial de Alfa válida; falta confirmación del Director de Seguridad Pública (no configurada: servidor pendiente)" : "credencial de Alfa incorrecta";
-    if (st.fallos >= MAX_CONEX) {
-      await auditar(S, "conexion_real_intento_fallido", `${st.fallos}/${MAX_CONEX} · ${motivo}`);
-      await borrarDatosDelSitio();
-      escribir(CLAVE_CONEX, { fallos: st.fallos, bloqueada: true, t: Date.now() });
-      await auditar({ usuario: S.usuario, rol: S.rol }, "conexion_real_bloqueo", `3 intentos fallidos: compuerta bloqueada y datos de sesión del sitio borrados en este navegador`);
-      try { localStorage.setItem("dgi_v4_aviso_bloqueo", "Conexión real BLOQUEADA tras 3 intentos fallidos. Se borraron los datos de sesión de este sitio en este navegador y se registró en la bitácora."); } catch (e) { /* nada */ }
-      location.reload(); return;
-    }
-    escribir(CLAVE_CONEX, st);
-    await auditar(S, "conexion_real_intento_fallido", `${st.fallos}/${MAX_CONEX} · ${motivo}`);
-    msg.className = "msg-acceso error";
-    msg.textContent = alfaOk ? "Credencial de Alfa válida, pero la confirmación del Director(a) de Seguridad Pública no está configurada en esta demo (servidor pendiente). La conexión real sigue apagada."
-      : "Credencial de Alfa incorrecta. La conexión real sigue apagada.";
-    pintarConexion(); btn.disabled = !!leer(CLAVE_CONEX, {}).bloqueada;
-  }
-
   // ---------------- Inicio ----------------
   function mostrarTab(id) {
     document.querySelectorAll(".pestanas button").forEach((b) => b.classList.toggle("activo", b.dataset.tab === id));
@@ -421,6 +410,7 @@
     document.body.classList.add("rol-" + S.rol);
     $("chip-rol").textContent = `${R.etq} · ${R.desc}`; $("chip-rol").title = S.nombre;
     if (S.rol === "eco" || S.rol === "delta" || S.rol === "charlie") { $("btn-simular").hidden = true; }
+    if (window.DGI_INT) window.DGI_INT.antesDeIniciar(S, R); // recorrido demo del Director: actúa con permisos de Director
     if (S.rol === "eco") $("auto-llamadas").checked = false;
     window.DGI_POLITICA = POLITICA;
     window.DGI_iniciar(datos);
@@ -443,9 +433,11 @@
     $("cp-cancelar").addEventListener("click", cancelarPanico);
     $("form-panico").addEventListener("submit", (ev) => { ev.preventDefault(); if (R.simular) pedirPanico(+$("pan-escuela").value, `simulación (${R.etq})`); });
     $("form-incidente").addEventListener("submit", (ev) => { ev.preventDefault(); if (R.simular) registrarIncidente($("inc-cat").value); });
-    $("btn-conexion").addEventListener("click", () => { pintarConexion(); $("mc-msg").textContent = ""; $("modal-conexion").classList.remove("oculto"); auditar(S, "conexion_real_consulta", "se abrió la compuerta (bloqueada)"); });
+    $("btn-conexion").addEventListener("click", () => {
+      if (R.tabs.includes("integracion")) { mostrarTab("tab-integracion"); if (esMovil()) $("panel").classList.add("abierto"); return; }
+      $("modal-conexion").classList.remove("oculto");
+    });
     $("mc-cancelar").addEventListener("click", () => $("modal-conexion").classList.add("oculto"));
-    $("form-conexion").addEventListener("submit", intentarConexion);
     document.addEventListener("click", (ev) => {
       const pe = ev.target.closest(".btn-panico-esc"); if (pe && R.simular) { G.mapa.closePopup(); pedirPanico(+pe.dataset.esc, `simulación (${R.etq})`); return; }
       const cp = ev.target.closest("[data-cerrar-pan]");
@@ -457,15 +449,17 @@
     window.addEventListener("storage", (ev) => { if (ev.key === CLAVE_PAN) pintarPanico(); if (ev.key === CLAVE_AUD) pintarAuditoria(); });
     const tick = () => {
       try {
-        observar(); procesarAlertas(); pintarPanico(); pintarUnidad(); pintarVF();
+        const op = window.DGI_MODO && window.DGI_MODO.operativo();
+        observar(); if (!op) procesarAlertas(); pintarPanico(); pintarUnidad(); pintarVF(); pintarConexion();
         if (!tick.n || tick.n % 3 === 0) { grafica(); pintarEscuelasLista(); }
         tick.n = (tick.n || 0) + 1;
       } catch (e) { console.warn(e); }
     };
     tick(); setInterval(tick, 1000);
     pintarFeed(); pintarLicencias(); pintarAuditoria(); pintarConexion();
-    window.__cm = { alertas, auditoria: () => leer(CLAVE_AUD, []), sesion: () => S, pedirPanico, cancelarPanico, escuelas: () => ({ marcadores: marcEsc.size, perimetros: circEsc.size, registros: D.escuelas_meta.registros }), cluster: () => cluster };
+    if (window.DGI_INT) window.DGI_INT.iniciar(S, R, D, G);
+    window.__cm = { alertas, auditoria: () => leer(CLAVE_AUD, []), verificarAuditoria, sesion: () => S, pedirPanico, cancelarPanico, escuelas: () => ({ marcadores: marcEsc.size, perimetros: circEsc.size, registros: D.escuelas_meta.registros }), cluster: () => cluster };
   }
 
-  window.DGI_CM = { iniciar, auditar, licencias };
+  window.DGI_CM = { iniciar, auditar, licencias, verificarAuditoria, mostrarTab, pintarKPIs, pintarAuditoria, feed: (c, t) => feed(c, t), roles: ROLES, tarjeta };
 })();
