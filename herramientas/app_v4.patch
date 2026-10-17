@@ -1,5 +1,5 @@
---- a/sitio/js/app.js
-+++ b/sitio/v4/js/app.js
+--- app_v3.js	2026-10-17 06:21:08.194689252 -0600
++++ /workspace/proyectos/08_Iniciativas_Gomez_Palacio/Durango_GeoInteligencia/v4_centro_mando/sitio/js/app.js	2026-10-17 06:23:18.586689252 -0600
 @@ -1,4 +1,5 @@
 -/* Durango GeoInteligencia v3 — sitio estático (Leaflet + OpenStreetMap + OSRM).
 +/* Durango GeoInteligencia v4 (centro de mando, PROTOTIPO LOCAL) — basado en la v3 publicada; cambios v4 marcados con "v4:".
@@ -16,7 +16,7 @@
    const MODELO_TXT = "Modelo estimado (simulación), no datos oficiales por colonia u hora";
    const M = window.DGI_MODELO;
  
-@@ -26,12 +27,26 @@
+@@ -26,12 +27,28 @@
    // Datos de ejemplo de v2 (mismos 5 incidentes; teléfonos ficticios con formato "SIM")
    const SEMILLA_INCIDENTES = [
      ["GP-DEMO-0001", "Robo a casa habitación", "alta", 25.7801, -103.3545, "Venecia", "871-SIM-0101", true, 25, null],
@@ -39,12 +39,14 @@
 +    return "otros";
 +  }
 +  const POL = () => window.DGI_POLITICA || null; // v4: política por rol (la define centro.js)
++  // v4 integración: en MODO OPERATIVO (lo decide integracion.js) no hay simulación: ni patrullas, ni incidentes, ni llamadas automáticas.
++  const OPER = () => !!(window.DGI_MODO && window.DGI_MODO.operativo());
 +  const posInc = (i) => (POL() ? POL().posIncidente(i) : [i.lat, i.lon]);
 +  const compatible = (u, i) => (i.categoria === "transito" ? true : u.tipo !== "transito"); // Tránsito solo atiende hechos viales
    const $ = (id) => document.getElementById(id);
    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
    const hora = (ms) => (ms ? new Date(ms).toLocaleTimeString("es-MX", { timeZone: TZ, hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—");
-@@ -122,17 +137,18 @@
+@@ -122,25 +139,28 @@
    }
  
    // ---------- Estado de la simulación ----------
@@ -65,9 +67,11 @@
 -    return { v: 3, unidades, incidentes, cerrados: 0, seq: 0, creado: ahora };
 +    return { v: 4, unidades, incidentes, cerrados: 0, seq: 0, creado: ahora };
    }
++  const estadoVacio = () => ({ v: 4, unidades: [], incidentes: [], cerrados: 0, seq: 0, creado: Date.now(), operativo: true });
    function guardar() {
++    if (OPER()) return; // el estado simulado guardado no se toca en modo operativo
      try { localStorage.setItem(CLAVE_ESTADO, JSON.stringify(E, (k, v) => (k === "_reservada" || k === "_asignando" ? undefined : v))); } catch (e) { /* sin espacio */ }
-@@ -140,7 +156,7 @@
+   }
    function cargarEstado() {
      try {
        const s = JSON.parse(localStorage.getItem(CLAVE_ESTADO));
@@ -76,7 +80,7 @@
      } catch (e) { /* nada */ }
      return null;
    }
-@@ -171,7 +187,7 @@
+@@ -171,7 +191,7 @@
      if (i.estatus !== "pendiente" || i._asignando) return null;
      i._asignando = true; pintar();
      try {
@@ -85,7 +89,23 @@
        let disp = libres();
        if (!disp.length) return { ok: false, mensaje: "Sin unidades disponibles en este momento: el incidente queda PENDIENTE de asignación." };
        const cand = disp.map((u) => ({ u, recta: dist(pos(u), pos(i)) })).sort((a, b) => a.recta - b.recta).slice(0, N_CANDIDATAS);
-@@ -258,9 +274,9 @@
+@@ -210,6 +230,7 @@
+   };
+ 
+   function ciclo() {
++    if (OPER()) return; // modo operativo: generadores simulados detenidos
+     const ahora = Date.now(), avance = (INTERVALO_MS / 1000) * FACTOR;
+     for (const u of E.unidades) {
+       if (u._reservada) continue;
+@@ -249,6 +270,7 @@
+ 
+   // Llamadas automáticas simuladas: más frecuentes en las horas de mayor riesgo estimado
+   function llamadaAutomatica() {
++    if (OPER()) return;
+     if (!$("auto-llamadas").checked || simularLlamada.ocupado) return;
+     if (E.incidentes.length >= MAX_ACTIVOS_AUTO) return;
+     const maxH = Math.max(...Array.from({ length: 24 }, (_, h) => M.totalHora(h, T.dia)));
+@@ -258,9 +280,9 @@
  
    // ---------- Mapa ----------
    const iconoUnidad = (u) => L.divIcon({ className: "mk", iconSize: [44, 46], iconAnchor: [22, 16], popupAnchor: [0, -14],
@@ -97,7 +117,7 @@
    const iconoEjido = () => L.divIcon({ className: "mk mk-ejido", iconSize: [22, 22], iconAnchor: [11, 11], html: "🌾" });
    const txtRuta = (fuente) => (fuente === "osrm" ? "por calles (OSRM)" : "línea recta (OSRM no disponible)");
    function txtModo(u) {
-@@ -283,7 +299,12 @@
+@@ -283,7 +305,12 @@
        <tr><td>Actualizado</td><td>${hora(u.act)} (centro)</td></tr></table>
        <div class="sim">Unidad, GPS y clave de oficial simulados (datos de ejemplo).</div></div>`;
    };
@@ -111,7 +131,7 @@
        <tr><td>Tipo</td><td><b>${esc(i.tipo)}</b></td></tr>
        <tr><td>Prioridad</td><td>${esc(PRIORIDAD[i.prioridad])}</td></tr>
        <tr><td>Estatus</td><td>${esc(ESTATUS_INC[i.estatus] || i.estatus)}</td></tr>
-@@ -396,8 +417,8 @@
+@@ -396,8 +423,8 @@
          L.DomEvent.disableClickPropagation(b); return b; } });
        botonCapas = new Boton().addTo(mapa).getContainer();
      }
@@ -122,7 +142,7 @@
        "🚨 Incidentes (simulados)": capas.incidentes,
        "🛣️ Rutas patrulla → incidente": capas.rutas,
        "🌡️ Riesgo estimado por hora (modelo)": capas.riesgo,
-@@ -499,23 +520,26 @@
+@@ -499,23 +526,27 @@
      if (!mapa) return;
      for (const u of E.unidades) {
        let m = marcadoresUnidad.get(u.codigo);
@@ -131,6 +151,7 @@
        if (!m) { m = L.marker(pos(u), { icon: iconoUnidad(u), zIndexOffset: 1000 }).bindPopup(() => popupUnidad(u)).addTo(capas.unidades); m._f = firma; marcadoresUnidad.set(u.codigo, m); }
        else { m.setLatLng(pos(u)); if (m._f !== firma) { m.setIcon(iconoUnidad(u)); m._f = firma; } if (m.isPopupOpen()) m.setPopupContent(popupUnidad(u)); }
      }
++    for (const [k, m] of marcadoresUnidad) if (!E.unidades.some((u) => u.codigo === k)) { capas.unidades.removeLayer(m); marcadoresUnidad.delete(k); } // v4: cambio de modo
      const vistosI = new Set();
      for (const i of E.incidentes) {
 +      if (POL() && POL().verIncidente && !POL().verIncidente(i)) continue; // v4: Eco solo ve la alerta de su escuela
@@ -152,7 +173,7 @@
        const osrm = u.ruta.fuente === "osrm";
        L.polyline(restoDeRuta(u), osrm ? { color: "#1d4ed8", weight: 5, opacity: 0.85 } : { color: "#d62828", weight: 4, opacity: 0.9, dashArray: "8 8" })
          .bindTooltip(`${u.codigo}: hacia ${u.incidente} · ${txtRuta(u.ruta.fuente)} · ${km(u.ruta.distancia)} · ${minutos(u.ruta.duracion)}`, { sticky: true })
-@@ -535,11 +559,11 @@
+@@ -535,11 +566,11 @@
      const ul = $("lista-incidentes");
      if (!E.incidentes.length) { ul.innerHTML = `<li class="vacio">Sin incidentes activos. Cerrados en esta sesión: ${E.cerrados}.</li>`; return; }
      const orden = { pendiente: 0, asignado: 1, en_sitio: 2 };
@@ -166,7 +187,7 @@
          <div class="fila2">📍 ${esc(i.referencia || "—")} · 🕒 ${hora(i.tiempo_llamada)}</div>
          <div class="fila2">🚔 ${esc(i.patrulla || "Sin asignar")}${i.patrulla ? ` · ${km(i.distancia_m)} · ${minutos(i.eta_s)} · ${i.fuente_ruta === "osrm" ? "por calles" : "línea recta"}` : ""}</div>
          ${i.estatus === "pendiente" ? `<button class="btn-asignar" data-folio="${esc(i.folio)}" ${i._asignando ? "disabled" : ""}>${i._asignando ? "Calculando rutas…" : "Asignar patrulla más cercana"}</button>` : ""}
-@@ -578,7 +602,7 @@
+@@ -578,7 +609,7 @@
        <p class="nota">${esc(res ? res.mensaje : "")}${ok && res.r.fuente !== "osrm" ? ` Ruta en LÍNEA RECTA: OSRM no disponible (${esc(res.r.error)}).` : ""}${i.fuera ? " ATENCIÓN: el punto está fuera del municipio de Gómez Palacio." : ""} Llamada simulada: folio, teléfono y ubicación son datos de ejemplo; la zona y el tipo se eligen con el modelo estimado de la hora ${hh(T.h)}; movimiento acelerado ×15.</p>`;
      if (ok) {
        avisoMapa(`${auto ? "📞 Auto · " : "✅ "}<b>${esc(res.u.codigo)}</b> → ${esc(i.folio)} · ${km(res.r.distancia)} · ${minutos(res.r.duracion)} · ${res.r.fuente === "osrm" ? "por calles (OSRM)" : "<b>línea recta</b> (OSRM no disponible)"}`, res.r.fuente === "osrm" ? "" : "alerta");
@@ -175,7 +196,16 @@
      } else avisoMapa(`⏳ ${esc(i.folio)}: sin unidad disponible, queda en espera.`, "alerta");
    }
  
-@@ -612,6 +636,7 @@
+@@ -603,7 +634,7 @@
+   }
+ 
+   async function simularLlamada(auto) {
+-    if (simularLlamada.ocupado) return;
++    if (simularLlamada.ocupado || OPER()) return;
+     simularLlamada.ocupado = true;
+     const btn = $("btn-simular");
+     if (!auto) { btn.disabled = true; btn.textContent = "📞 Calculando ruta…"; }
+@@ -612,6 +643,7 @@
      do { [lat, lon] = desplazar(z.lat, z.lon, (z.tipo === "rural" ? 150 : 100) + Math.random() * (z.tipo === "rural" ? 800 : 550), Math.random() * 360); } while (!dentroMunicipio(lat, lon) && ++k < 10);
      const i = { folio: folioNuevo(), tipo: s.etq, prioridad: s.prio, lat, lon, referencia: z.nombre, zonaId: z.id, direccion: `Zona ${z.nombre} (simulado)`,
        telefono: "871-SIM-" + String(Math.floor(Math.random() * 10000)).padStart(4, "0"), aml: Math.random() < 0.7, auto: !!auto,
@@ -183,7 +213,30 @@
        tiempo_llamada: Date.now(), estatus: "pendiente", patrulla: null, localidad: localidadCercana([lat, lon]), fuera: !dentroMunicipio(lat, lon) };
      E.incidentes.push(i); guardar(); pintar();
      if (!auto && esMovil()) abrirPanel(false);
-@@ -692,6 +717,11 @@
+@@ -639,11 +671,11 @@
+     ZONA = new Map(D.zonas.map((z) => [z.id, z]));
+     M.iniciar(D.zonas, D.sesnsp);
+     construirMapa();
+-    const guardado = cargarEstado();
+-    E = guardado || estadoInicial();
++    const guardado = OPER() ? null : cargarEstado();
++    E = OPER() ? estadoVacio() : guardado || estadoInicial();
+     window.DGI_ESTADISTICA.render($("estadistica"), D.sesnsp);
+     actualizarModelo(true);
+-    if (!guardado) despacharSemilla();
++    if (!guardado && !OPER()) despacharSemilla();
+     setInterval(ciclo, INTERVALO_MS);
+ 
+     $("btn-simular").addEventListener("click", () => simularLlamada(false));
+@@ -682,6 +714,7 @@
+       if (m) { if (esMovil()) abrirPanel(false); mapa.flyTo(m.getLatLng(), 14, { duration: 0.8 }); setTimeout(() => m.openPopup(), 850); }
+     });
+     $("btn-reiniciar").addEventListener("click", () => {
++      if (OPER()) return;
+       if (!confirm("¿Restablecer patrullas e incidentes de ejemplo?")) return;
+       E = estadoInicial(); guardar(); $("resultado").className = "resultado oculto";
+       actualizarModelo(true); despacharSemilla();
+@@ -692,6 +725,17 @@
      };
      reloj(); setInterval(reloj, 1000);
      window.__dgi = { mapa, estado: () => E, datos: () => D, hora: () => ({ h: T.h, dia: T.dia, enVivo: T.enVivo }), fijarHora,
@@ -193,6 +246,12 @@
 +      capas, control: CONTROL, asignar, pintar, guardar, dist, desplazar, categoriaDe, folioNuevo, dentroMunicipio, localidadCercana,
 +      agregar: async (i) => { E.incidentes.push(i); guardar(); pintar(); return asignar(i); },
 +      reemplazarEstado: (nuevo) => { E = nuevo; },
++      // v4 integración: cambia entre simulación y modo operativo SIN recargar ni reconstruir
++      aplicarModo: () => {
++        if (OPER()) { E = estadoVacio(); $("resultado").className = "resultado oculto"; }
++        else { const g = cargarEstado(); E = g || estadoInicial(); if (!g) despacharSemilla(); }
++        actualizarModelo(true); pintar();
++      },
 +      turno: () => turnoDe(T.h) }; // depuración, pruebas y centro de mando
    };
  })();
