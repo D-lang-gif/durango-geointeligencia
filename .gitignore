@@ -9,3 +9,9 @@ __pycache__/
 # Leaflet se agrega automáticamente al publicar (ver .github/workflows/publicar.yml)
 sitio/vendor/
 _sitio/
+
+# Servidor de integración (secretos locales)
+servidor/integracion/.env
+servidor/integracion/datos/*
+!servidor/integracion/datos/.gitkeep
+servidor/integracion/**/.master.key

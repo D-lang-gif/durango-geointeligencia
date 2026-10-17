@@ -29,6 +29,13 @@ jobs:
           mkdir -p _sitio/vendor/markercluster
           cp tmp/mc/dist/MarkerCluster.css tmp/mc/dist/MarkerCluster.Default.css tmp/mc/MIT-LICENCE.txt _sitio/vendor/markercluster/
           sed '/sourceMappingURL/d' tmp/mc/dist/leaflet.markercluster.js > _sitio/vendor/markercluster/leaflet.markercluster.js
+          # v4: QR (MIT, Kazuhiko Arase) para credenciales firmadas
+          curl -fsSL -o tmp/qr.tgz https://registry.npmjs.org/qrcode-generator/-/qrcode-generator-2.0.4.tgz
+          echo "02e2e18a99a90b02dad940851f59b7c3c5fd1ab79cbdece8595cb06328878159  tmp/qr.tgz" | sha256sum -c -
+          tar xzf tmp/qr.tgz -C tmp && mv tmp/package tmp/qr
+          mkdir -p _sitio/v4/vendor
+          sed '/sourceMappingURL/d' tmp/qr/dist/qrcode.js > _sitio/v4/vendor/qrcode.js
+          echo "if (typeof window !== 'undefined' && typeof qrcode !== 'undefined') window.qrcode = qrcode;" >> _sitio/v4/vendor/qrcode.js
           tar xzf tmp/leaflet.tgz -C tmp && mv tmp/package tmp/leaflet
           tar xzf tmp/heat.tgz -C tmp && mv tmp/package tmp/heat
           cp -r tmp/leaflet/dist/leaflet.js tmp/leaflet/dist/leaflet.css tmp/leaflet/dist/images _sitio/vendor/leaflet/
@@ -53,6 +60,11 @@ jobs:
           if find _sitio -iname '*.map' | grep -q .; then echo "Hay mapas de código fuente"; exit 1; fi
           if grep -rl 'sourceMappingURL' _sitio/js _sitio/v4 _sitio/vendor/markercluster --include='*.js' | grep -q .; then echo "Referencia a mapas de código fuente"; exit 1; fi
           test -f _sitio/v4/index.html
+          test -f _sitio/v4/verificar.html
+          test -f _sitio/v4/js/integracion.js
+          test -f _sitio/v4/js/firma.js
+          test -f _sitio/v4/vendor/qrcode.js
+          test -f _sitio/v4/demo_c4/salud.json
           ls -R _sitio
       - name: Publicar en la rama gh-pages
         env:
