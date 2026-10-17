@@ -1,6 +1,9 @@
 /* Durango GeoInteligencia v4 (DEMO) — acceso por ROL.
    Cada usuario (alfa, charlie, bravo, delta, eco) tiene sal + verificador PBKDF2-HMAC-SHA256 (600 000 it.). Las contraseñas NO están en el sitio.
    La llave de datos va envuelta por usuario: solo quien conoce su contraseña descifra el paquete del mapa.
+   v4 integración: además acepta CUENTAS LOCALES creadas en este navegador (Director(a) de Seguridad Pública y usuarios que él/ella
+   emite), con su propio verificador PBKDF2 y la llave de datos envuelta con su contraseña; y respeta el TRASPASO DE MANDO
+   (tras el traspaso, Alfa queda como «última instancia» y no entra hasta que el Director lo reactive).
    LÍMITE HONESTO: es verificación en el navegador (nivel demostración); para uso real, autenticación y permisos en servidor. */
 (function () {
   "use strict";
@@ -30,7 +33,8 @@
     const flujo = new Blob([claro]).stream().pipeThrough(new DecompressionStream("gzip"));
     return JSON.parse(await new Response(flujo).text());
   }
-  // Verificación de la credencial de Alfa (la usa la compuerta «Conexión real»)
+  window.DGI_derivar = derivar; // lo usa integracion.js para dar de alta cuentas locales y confirmar con contraseña
+  // Verificación de la credencial de Alfa
   window.DGI_verificarAlfa = async function (pw) {
     const r = P.usuarios.alfa; const { verificador } = await derivar("alfa", String(pw || "").trim().toLowerCase(), r.sal);
     return verificador === r.verificador;
@@ -48,12 +52,13 @@
     window.DGI_CM.iniciar(sesion, datos);
   }
   async function entrar(u, reg, kek) {
-    const lic = window.DGI_CM.licencias.verificar(reg.org);
+    const lic = reg.local ? { ok: true } : window.DGI_CM.licencias.verificar(reg.org); // cuentas del Director: sin licencia simulada
     if (!lic.ok) { mensaje(lic.motivo, true); window.DGI_CM.auditar({ usuario: u, rol: reg.rol }, "acceso_bloqueado_licencia", lic.motivo); return; }
     const dek = await abrirAES(kek, reg.llave.iv, reg.llave.ct, u);
     const datos = await descifrarDatos(dek);
-    const sesion = { usuario: u, rol: reg.rol, nombre: reg.nombre, org: reg.org, unidad: reg.unidad || null, escuela: reg.escuela ?? null, inicio: Date.now() };
-    try { sessionStorage.setItem(CLAVE_SESION, JSON.stringify({ ...sesion, dek: aB64(dek) })); } catch (e) { /* modo privado */ }
+    const sesion = { usuario: u, rol: reg.rol, nombre: reg.nombre, org: reg.org, unidad: reg.unidad || null, escuela: reg.escuela ?? null, inicio: Date.now(), local: !!reg.local };
+    const extra = window.DGI_INT ? await window.DGI_INT.alEntrar(sesion, kek, dek) : {};
+    try { sessionStorage.setItem(CLAVE_SESION, JSON.stringify({ ...sesion, dek: aB64(dek), ...extra })); } catch (e) { /* modo privado */ }
     try { localStorage.removeItem(CLAVE_INTENTOS); } catch (e) { /* nada */ }
     window.DGI_CM.auditar(sesion, "acceso", `${reg.rol.toUpperCase()} · licencia ${reg.org}`);
     $("contrasena").value = "";
@@ -68,10 +73,14 @@
     if (s.hasta > Date.now()) { mensaje(`Demasiados intentos. Espere ${Math.ceil((s.hasta - Date.now()) / 1000)} s.`, true); return; }
     const btn = $("btn-entrar"); btn.disabled = true; btn.textContent = "Verificando…"; mensaje("");
     try {
-      const u = $("usuario").value.trim().toLowerCase(), pw = $("contrasena").value.trim().toLowerCase();
-      const reg = Object.prototype.hasOwnProperty.call(P.usuarios, u) ? P.usuarios[u] : null;
+      const u = $("usuario").value.trim().toLowerCase(), pwOriginal = $("contrasena").value.trim();
+      const fijo = Object.prototype.hasOwnProperty.call(P.usuarios, u) ? P.usuarios[u] : null;
+      const local = !fijo && window.DGI_INT ? window.DGI_INT.cuentaLocal(u) : null; // Director(a) y usuarios emitidos por él/ella
+      const reg = fijo || local, pw = local ? pwOriginal : pwOriginal.toLowerCase();
       const { kek, verificador } = await derivar(u, pw, reg ? reg.sal : P.usuarios.alfa.sal); // siempre se deriva (no revela usuarios por tiempo)
       if (!reg || verificador !== reg.verificador) { fallo(u); await new Promise((r) => setTimeout(r, 600)); mensaje("Usuario o contraseña incorrectos.", true); return; }
+      const bloqueo = window.DGI_INT ? await window.DGI_INT.puedeEntrar(u, reg) : null; // traspaso de mando, revocación, vigencia
+      if (bloqueo) { mensaje(bloqueo, true); window.DGI_CM.auditar({ usuario: u, rol: reg.rol }, "acceso_denegado", bloqueo); return; }
       await entrar(u, reg, kek);
     } catch (e) {
       console.warn(e); mensaje("No se pudo completar el acceso: " + (e.message || e), true);
@@ -91,7 +100,9 @@
     let s = null; try { s = JSON.parse(sessionStorage.getItem(CLAVE_SESION) || "null"); } catch (e) { /* nada */ }
     if (s && s.dek && soportado()) {
       try {
-        const lic = window.DGI_CM.licencias.verificar(s.org); if (!lic.ok) throw new Error(lic.motivo);
+        const lic = s.local ? { ok: true } : window.DGI_CM.licencias.verificar(s.org); if (!lic.ok) throw new Error(lic.motivo);
+        const bloqueo = window.DGI_INT ? await window.DGI_INT.puedeEntrar(s.usuario, window.DGI_INT.cuentaLocal(s.usuario) || { rol: s.rol }) : null;
+        if (bloqueo) throw new Error(bloqueo);
         const datos = await descifrarDatos(b64(s.dek)); const { dek, ...sesion } = s;
         abrir(sesion, datos); return;
       } catch (e) { sessionStorage.removeItem(CLAVE_SESION); mensaje(String(e.message || e), true); }

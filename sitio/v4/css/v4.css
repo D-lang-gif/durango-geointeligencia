@@ -55,3 +55,45 @@ body.rol-eco .solo-simular, body.rol-delta .solo-simular, body.rol-charlie .solo
   .chip.conexion-real { font-size:10.5px; padding:3px 7px; } .chip.rol { font-size:10.5px; }
   .kpis-v4 { grid-template-columns:repeat(3, 1fr) !important; }
 }
+
+/* ---- Integración / modo operativo / credenciales / traspaso (v4) ---- */
+.banner-modo {
+  background: #7a3e00; color: #fff8e7; text-align: center; font-size: 0.85rem; font-weight: 600;
+  padding: 0.35rem 0.75rem; letter-spacing: 0.01em;
+}
+body.modo-operativo .banner-modo { background: #0b5c3a; color: #e8fff4; }
+body.recorrido .banner-modo { background: #3b2e7a; }
+body.modo-operativo .chip.demo { display: none; }
+body.modo-operativo #btn-simular,
+body.modo-operativo #form-incidente,
+body.modo-operativo #auto-llamadas,
+body.modo-operativo #btn-reiniciar,
+body.modo-operativo .solo-simular { display: none !important; }
+body.modo-operativo .chip.conexion-real.operativo { background: #0b5c3a; color: #fff; }
+.espera-c4 { background: #fff3cd; border: 1px solid #e0c36a; padding: 0.6rem 0.8rem; border-radius: 8px; font-weight: 600; }
+.estado-op { color: #0b5c3a; font-weight: 700; }
+.estado-demo { color: #7a3e00; font-weight: 700; }
+.resultado-prueba { border-radius: 8px; padding: 0.75rem; margin-top: 0.5rem; }
+.resultado-prueba.ok { background: #e8fff4; border: 1px solid #0b5c3a; }
+.resultado-prueba.mal { background: #fff0f0; border: 1px solid #a33; }
+.resultado-prueba pre.muestra { white-space: pre-wrap; word-break: break-all; font-size: 0.75rem; background: #0b2545; color: #d7e3f4; padding: 0.5rem; border-radius: 6px; max-height: 8rem; overflow: auto; }
+.qr-box { display: inline-block; padding: 0.5rem; background: #fff; border: 1px solid #c5d0e0; border-radius: 8px; margin: 0.5rem 0; }
+.qr-box img { display: block; width: 200px; height: 200px; }
+.mk-cam { width: 28px; height: 28px; border-radius: 50%; background: #13315c; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.msg-acceso.ok { color: #0b5c3a; }
+#dev-lista li.pendiente { border-left: 3px solid #e0c36a; }
+#dev-lista li.aprobado { border-left: 3px solid #0b5c3a; }
+.pagina-verificar { display: flex; justify-content: center; padding: 2rem 1rem; background: #0b2545; min-height: 100vh; }
+.caja-verificar { background: #fff; max-width: 560px; width: 100%; border-radius: 12px; padding: 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.caja-verificar h1 { margin: 0 0 0.25rem; color: #0b2545; }
+.caja-verificar .sub { color: #5a6a80; margin-bottom: 1rem; }
+.caja-verificar textarea, .caja-verificar input { width: 100%; box-sizing: border-box; margin: 0.25rem 0 0.75rem; }
+.veredicto { padding: 0.75rem; border-radius: 8px; margin-bottom: 0.75rem; }
+.veredicto.ok { background: #e8fff4; }
+.veredicto.mal { background: #fff0f0; }
+.veredicto h2 { margin: 0; }
+.resultado-verificacion ul { padding-left: 1.1rem; }
+body.recorrido #cred-dir-pw-fila,
+body.recorrido #op-pw-fila,
+body.recorrido #tr-pw-fila,
+body.recorrido #tr-re-pw-fila { display: none; }
